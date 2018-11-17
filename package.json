@@ -20,5 +20,25 @@
     "disconnected": "^0.1.4",
     "rollup": "^0.67.3",
     "uglify-js": "^2.8.29"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WebReflection/regular-elements.git"
+  },
+  "keywords": [
+    "dom",
+    "custom",
+    "regular",
+    "elements",
+    "define",
+    "behavior"
+  ],
+  "bugs": {
+    "url": "https://github.com/WebReflection/regular-elements/issues"
+  },
+  "homepage": "https://github.com/WebReflection/regular-elements#readme"
 }
