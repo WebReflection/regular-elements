@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script>this.Promise||document.write('<script src="https://unpkg.com/es6-promise@4.2.5/dist/es6-promise.auto.min.js"><\x2fscript>')</script>
+  <script defer src="../min.js"></script>
+  <script>
+  this.onload = function () {
+    regularElements.define('button', {
+      onconnected: function () {
+        this.textContent += ' live! Click me to erase the body';
+        this.addEventListener('click', function () {
+          document.body.textContent = '';
+        });
+      },
+      ondisconnected: function () {
+        document.body.appendChild(
+          document.createElement('p')
+        ).textContent = 'bye bye';
+      },
+      onattributechanged: function (event) {
+        document.body.appendChild(
+          document.createElement('p')
+        ).textContent = [
+            'attribute changed:',
+            event.attributeName,
+            event.oldValue == null ? 'null' : event.oldValue,
+            event.newValue == null ? 'null' : event.newValue
+          ].join(' ');
+      }
+    });
+    document.querySelector('button').setAttribute('test', 'OK');
+  };
+  </script>
+</head>
+<body>
+  <button>OK</button>
+</body>
+</html>
