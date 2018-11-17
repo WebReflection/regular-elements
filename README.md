@@ -36,4 +36,6 @@ regularElements.define(
 
 The _API_ is similar to `customElements` one, included `.get(selector)` and `.whenDefined(selector)`.
 
-In order to use latter, be sure there is a `Promie` polyfill available on the global scope.
+### Compatibility
+
+[Even IE 9](https://webreflection.github.io/regular-elements/test/), but In order to also use `whenDefined` method, a `Promie` polyfill available on the global scope.
