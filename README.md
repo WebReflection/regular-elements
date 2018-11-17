@@ -34,8 +34,8 @@ regularElements.define(
 );
 ```
 
-The _API_ is similar to `customElements` one, included `.get(selector)` and `.whenDefined(selector)`.
+The _API_ is similar to the `customElements` one, included `.get(selector)` and `.whenDefined(selector)`.
 
 ### Compatibility
 
-[Even IE 9](https://webreflection.github.io/regular-elements/test/), but In order to also use `whenDefined` method, a `Promie` polyfill available on the global scope.
+[Even IE 9](https://webreflection.github.io/regular-elements/test/), but in order to also use `whenDefined` method, a `Promise` polyfill needs to be available on the global scope.
