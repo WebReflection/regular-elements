@@ -38,4 +38,4 @@ The _API_ is similar to `customElements` one, included `.get(selector)` and `.wh
 
 ### Compatibility
 
-[Even IE 9](https://webreflection.github.io/regular-elements/test/), but In order to also use `whenDefined` method, a `Promie` polyfill available on the global scope.
+[Even IE 9](https://webreflection.github.io/regular-elements/test/), but In order to also use `whenDefined` method, a `Promise` polyfill available on the global scope.
