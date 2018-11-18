@@ -21,6 +21,7 @@
           document.createElement('p')
         ).textContent = 'bye bye';
       },
+      attributeFilter: ['test'],
       onattributechanged: function (event) {
         document.body.appendChild(
           document.createElement('p')
@@ -32,7 +33,9 @@
           ].join(' ');
       }
     });
-    document.querySelector('button').setAttribute('test', 'OK');
+    var button = document.querySelector('button');
+    button.setAttribute('test', 'OK');
+    button.setAttribute('nope', 'OK');
   };
   </script>
 </head>

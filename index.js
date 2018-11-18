@@ -143,31 +143,18 @@ var regularElements = (function () {
     );
   }
 
-  /*
-   * ISC License
-   *
-   * Copyright (c) 2018, Andrea Giammarchi, @WebReflection
-   *
-   * Permission to use, copy, modify, and/or distribute this software for any
-   * purpose with or without fee is hereby granted, provided that the above
-   * copyright notice and this permission notice appear in all copies.
-   *
-   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-   * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-   * AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-   * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-   * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
-   * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-   * PERFORMANCE OF THIS SOFTWARE.
-   */
-
+  /*! (c) Andrea Giammarchi */
   function attributechanged(poly) {  var Event = poly.Event;
-    return function observe(node) {
+    return function observe(node, attributeFilter) {
+      var options = {attributes: true, attributeOldValue: true};
+      var filtered = attributeFilter instanceof Array && attributeFilter.length;
+      if (filtered)
+        options.attributeFilter = attributeFilter.slice(0);
       try {
-        (new MutationObserver(changes))
-          .observe(node, {attributes: true, attributeOldValue: true});
+        (new MutationObserver(changes)).observe(node, options);
       } catch(o_O) {
-        node.addEventListener('DOMAttrModified', attrModified, true);
+        options.handleEvent = filtered ? handleEvent : attrModified;
+        node.addEventListener('DOMAttrModified', options, true);
       }
       return node;
     };
@@ -187,26 +174,13 @@ var regularElements = (function () {
         dispatchEvent(record.target, record.attributeName, record.oldValue);
       }
     }
+    function handleEvent(event) {
+      if (-1 < this.attributeFilter.indexOf(event.attrName))
+        attrModified(event);
+    }
   }
 
-  /**
-   * ISC License
-   *
-   * Copyright (c) 2018, Andrea Giammarchi, @WebReflection
-   *
-   * Permission to use, copy, modify, and/or distribute this software for any
-   * purpose with or without fee is hereby granted, provided that the above
-   * copyright notice and this permission notice appear in all copies.
-   *
-   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-   * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-   * AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-   * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-   * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
-   * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-   * PERFORMANCE OF THIS SOFTWARE.
-   */
-
+  /*! (c) Andrea Giammarchi */
   function disconnected(poly) {  var CONNECTED = 'connected';
     var DISCONNECTED = 'dis' + CONNECTED;
     var Event = poly.Event;
@@ -394,9 +368,13 @@ var regularElements = (function () {
         .observe(doc, {subtree: true, childList: true});
     }
     catch(o_O) {
-      doc.addEventListener('DOMNodeInsterted', function (e) {
-        changes([{addedNodes: [e.target]}]);
-      });
+      doc.addEventListener(
+        'DOMNodeInsterted',
+        function (e) {
+          changes([{addedNodes: [e.target]}]);
+        },
+        false
+      );
     }
     if (doc.readyState !== 'complete')
       doc.addEventListener('DOMContentLoaded', ready, {once: true});
@@ -429,7 +407,8 @@ var regularElements = (function () {
   function setupListener(node, options, type, dispatch) {
     var method = options['on' + type];
     if (method) {
-      observe[type](node).addEventListener(type, method);
+      observe[type](node, options.attributeFilter)
+        .addEventListener(type, method, false);
       if (dispatch && contains.call(regularElements.document, node))
         node.dispatchEvent(new Event$1(type));
     }

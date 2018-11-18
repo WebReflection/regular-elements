@@ -2,6 +2,8 @@
 
 Everything I love about Custom Elements made available for any node, and through CSS selectors.
 
+No Custom Elements, no Shadow DOM, forget about polyfills and classes, use just the good old HTML, exponentially glorified for every browser and in [less than 2Kb library](https://unpkg.com/regular-elements).
+
 ```js
 regularElements.define('button', {
   // triggered once live
@@ -19,7 +21,10 @@ regularElements.define('button', {
   onattributechanged(event) {
     const {attributeName, oldValue, newValue} = event;
     console.log(attributeName, oldValue, newValue);
-  }
+  },
+  // optionally you can specify attributes to observe
+  // by default, or with an empty list, all attributes are notified
+  attributeFilter: ['only', 'these', 'attrs']
 });
 
 regularElements.define(

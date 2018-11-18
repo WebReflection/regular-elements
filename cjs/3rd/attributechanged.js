@@ -1,30 +1,17 @@
 'use strict';
-/*
- * ISC License
- *
- * Copyright (c) 2018, Andrea Giammarchi, @WebReflection
- *
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
- * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
-
+/*! (c) Andrea Giammarchi */
 function attributechanged(poly) {'use strict';
   var Event = poly.Event;
-  return function observe(node) {
+  return function observe(node, attributeFilter) {
+    var options = {attributes: true, attributeOldValue: true};
+    var filtered = attributeFilter instanceof Array && attributeFilter.length;
+    if (filtered)
+      options.attributeFilter = attributeFilter.slice(0);
     try {
-      (new MutationObserver(changes))
-        .observe(node, {attributes: true, attributeOldValue: true});
+      (new MutationObserver(changes)).observe(node, options);
     } catch(o_O) {
-      node.addEventListener('DOMAttrModified', attrModified, true);
+      options.handleEvent = filtered ? handleEvent : attrModified;
+      node.addEventListener('DOMAttrModified', options, true);
     }
     return node;
   };
@@ -43,6 +30,10 @@ function attributechanged(poly) {'use strict';
       record = records[i];
       dispatchEvent(record.target, record.attributeName, record.oldValue);
     }
+  }
+  function handleEvent(event) {
+    if (-1 < this.attributeFilter.indexOf(event.attrName))
+      attrModified(event);
   }
 }
 Object.defineProperty(exports, '__esModule', {value: true}).default = attributechanged;

@@ -4,20 +4,20 @@
   "description": "Custom Elements made available for any node, and through CSS selectors",
   "main": "index.js",
   "scripts": {
-    "build": "rollup --config rollup.config.js && npm run cleanup && ascjs esm cjs && npm run min && npm run size",
+    "build": "npm run 3rd-parts && rollup --config rollup.config.js && npm run cleanup && ascjs esm cjs && npm run min && npm run size",
     "3rd-parts": "npm run 3rd-attributechanged && npm run 3rd-disconnected",
     "3rd-attributechanged": "cp node_modules/attributechanged/esm/index.js esm/3rd/attributechanged.js",
     "3rd-disconnected": "cp node_modules/disconnected/esm/index.js esm/3rd/disconnected.js",
     "min": "echo \"/*! (c) Andrea Giammarchi (ISC) */$(uglifyjs index.js --support-ie8 -c -m)\" > min.js",
-    "size": "cat min.js | brotli | wc -c",
+    "size": "cat min.js | gzip -9 | wc -c && cat min.js | brotli | wc -c",
     "cleanup": "cat index.js|sed 's/(exports)/()/'|sed 's/return exports;/return regularElements;/'|sed -e 's/exports.*;//g'|sed 's/({})/()/'>index.clean&&mv index.clean index.js"
   },
   "author": "Andrea Giammarchi",
   "license": "ISC",
   "devDependencies": {
     "ascjs": "^2.5.1",
-    "attributechanged": "^0.1.0",
-    "disconnected": "^0.1.4",
+    "attributechanged": "^0.2.0",
+    "disconnected": "^0.1.5",
     "rollup": "^0.67.3",
     "uglify-js": "^2.8.29"
   },

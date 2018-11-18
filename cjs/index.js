@@ -92,9 +92,13 @@ function init(doc) {
       .observe(doc, {subtree: true, childList: true});
   }
   catch(o_O) {
-    doc.addEventListener('DOMNodeInsterted', function (e) {
-      changes([{addedNodes: [e.target]}]);
-    });
+    doc.addEventListener(
+      'DOMNodeInsterted',
+      function (e) {
+        changes([{addedNodes: [e.target]}]);
+      },
+      false
+    );
   }
   if (doc.readyState !== 'complete')
     doc.addEventListener('DOMContentLoaded', ready, {once: true});
@@ -127,7 +131,8 @@ function setupList(nodes, isElement) {
 function setupListener(node, options, type, dispatch) {
   var method = options['on' + type];
   if (method) {
-    observe[type](node).addEventListener(type, method);
+    observe[type](node, options.attributeFilter)
+      .addEventListener(type, method, false);
     if (dispatch && contains.call(regularElements.document, node))
       node.dispatchEvent(new Event(type));
   }
