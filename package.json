@@ -2,7 +2,9 @@
   "name": "regular-elements",
   "version": "0.2.0",
   "description": "Custom Elements made available for any node, and through CSS selectors",
-  "main": "index.js",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
+  "unpkg": "min.js",
   "scripts": {
     "build": "npm run 3rd-parts && rollup --config rollup.config.js && npm run cleanup && ascjs esm cjs && npm run min && npm run size",
     "3rd-parts": "npm run 3rd-attributechanged && npm run 3rd-disconnected",
