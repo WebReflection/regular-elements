@@ -1,4 +1,6 @@
 'use strict';
+var indexOf = [].indexOf;
+
 // borrowed from https://github.com/WebReflection/dom4/blob/master/src/dom4.js#L130
 var matches = 'matches' in document.documentElement ?
   function (el, selector) {
