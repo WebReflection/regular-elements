@@ -6,7 +6,7 @@
   "module": "esm/index.js",
   "unpkg": "min.js",
   "scripts": {
-    "build": "npm run 3rd-parts && rollup --config rollup.config.js && npm run cleanup && ascjs esm cjs && npm run min && npm run size",
+    "build": "npm run 3rd-parts && ascjs esm cjs && rollup --config rollup.config.js && npm run cleanup && npm run min && npm run size",
     "3rd-parts": "npm run 3rd-attributechanged && npm run 3rd-disconnected",
     "3rd-attributechanged": "cp node_modules/attributechanged/esm/index.js esm/3rd/attributechanged.js",
     "3rd-disconnected": "cp node_modules/disconnected/esm/index.js esm/3rd/disconnected.js",
