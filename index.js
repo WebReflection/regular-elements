@@ -310,7 +310,7 @@ var regularElements = (function () {
   var query = [];
   var config = [];
   var waiting = {};
-  var visited = new WeakSet$1;
+  var known = {};
 
   var lifecycle = disconnected({Event: Event$1, WeakSet: WeakSet$1});
   var observe = {
@@ -386,12 +386,13 @@ var regularElements = (function () {
   }
 
   function setup(node) {
-    if (!visited.has(node)) {
-      visited.add(node);
-      setupList(node.children, true);
-      for (var i = 0, length = query.length; i < length; i++) {
-        if (matches(node, query[i]))
-          setupListeners(node, config[i]);
+    setupList(node.querySelectorAll(query), true);
+    for (var ws, css, i = 0, length = query.length; i < length; i++) {
+      css = query[i];
+      ws = known[css] || (known[css] = new WeakSet$1);
+      if (!ws.has(node) && matches(node, query[i])) {
+        ws.add(node);
+        setupListeners(node, config[i]);
       }
     }
   }

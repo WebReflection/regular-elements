@@ -31,7 +31,7 @@ var bootstrap = true;
 var query = [];
 var config = [];
 var waiting = {};
-var visited = new WeakSet;
+var known = {};
 
 var lifecycle = disconnected({Event: Event, WeakSet: WeakSet});
 var observe = {
@@ -109,12 +109,13 @@ function ready() {
 }
 
 function setup(node) {
-  if (!visited.has(node)) {
-    visited.add(node);
-    setupList(node.children, true);
-    for (var i = 0, length = query.length; i < length; i++) {
-      if (matches(node, query[i]))
-        setupListeners(node, config[i]);
+  setupList(node.querySelectorAll(query), true);
+  for (var ws, css, i = 0, length = query.length; i < length; i++) {
+    css = query[i];
+    ws = known[css] || (known[css] = new WeakSet);
+    if (!ws.has(node) && matches(node, query[i])) {
+      ws.add(node);
+      setupListeners(node, config[i]);
     }
   }
 }
