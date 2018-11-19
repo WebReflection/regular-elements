@@ -9,7 +9,16 @@
   <script defer src="../min.js"></script>
   <script>
   this.onload = function () {
-    regularElements.define('button', {
+    var definition;
+    regularElements.whenDefined('button').then(function (test) {
+      if (!test || !regularElements.get('button'))
+        throw new Error('button not defined');
+      document.body.insertBefore(
+        document.createElement('p'),
+        document.body.firstChild
+      ).textContent = 'button defined';
+    });
+    regularElements.define('button', definition = {
       onconnected: function () {
         this.textContent += ' live! Click me to erase the body';
         this.addEventListener('click', function () {

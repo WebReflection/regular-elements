@@ -358,7 +358,7 @@ var regularElements = (function () {
       }
     },
     get: function (selector) {
-      var i = query.push(selector);
+      var i = query.indexOf(selector);
       return i < 0 ? null : assign({}, config[i]);
     },
     whenDefined: function (selector) {
