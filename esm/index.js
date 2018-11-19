@@ -36,6 +36,7 @@ var known = {};
 var regularElements = {
   Event: Event,
   WeakSet: WeakSet,
+  assign: assign,
   document: document,
   define: function (selector, options) {
     if (bootstrap) {
@@ -82,7 +83,7 @@ var observe = {
 };
 
 export default regularElements;
-export {regularElements, Event, WeakSet};
+export {regularElements, assign, Event, WeakSet};
 
 function changes(records) {
   for (var i = 0, length = records.length; i < length; i++)

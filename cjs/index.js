@@ -37,6 +37,7 @@ var known = {};
 var regularElements = {
   Event: Event,
   WeakSet: WeakSet,
+  assign: assign,
   document: document,
   define: function (selector, options) {
     if (bootstrap) {
@@ -84,6 +85,7 @@ var observe = {
 
 Object.defineProperty(exports, '__esModule', {value: true}).default = regularElements;
 exports.regularElements = regularElements;
+exports.assign = assign;
 exports.Event = Event;
 exports.WeakSet = WeakSet;
 

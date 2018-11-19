@@ -333,6 +333,7 @@ var regularElements = (function () {
   var regularElements = {
     Event: Event$1,
     WeakSet: WeakSet$1,
+    assign: assign,
     document: document,
     define: function (selector, options) {
       if (bootstrap) {
@@ -442,6 +443,7 @@ var regularElements = (function () {
     setupListener(node, options, 'connected', true);
   }
 
+  
   
   
   
