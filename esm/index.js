@@ -33,14 +33,9 @@ var config = [];
 var waiting = {};
 var known = {};
 
-var lifecycle = disconnected({Event: Event, WeakSet: WeakSet});
-var observe = {
-  attributechanged: attributechanged({Event: Event}),
-  connected: lifecycle,
-  disconnected: lifecycle
-};
-
 var regularElements = {
+  Event: Event,
+  WeakSet: WeakSet,
   document: document,
   define: function (selector, options) {
     if (bootstrap) {
@@ -78,7 +73,16 @@ var regularElements = {
   }
 };
 
+// passing along regularElements as poly for Event and WeakSet
+var lifecycle = disconnected(regularElements);
+var observe = {
+  attributechanged: attributechanged(regularElements),
+  connected: lifecycle,
+  disconnected: lifecycle
+};
+
 export default regularElements;
+export {regularElements, Event, WeakSet};
 
 function changes(records) {
   for (var i = 0, length = records.length; i < length; i++)

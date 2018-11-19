@@ -330,14 +330,9 @@ var regularElements = (function () {
   var waiting = {};
   var known = {};
 
-  var lifecycle = disconnected({Event: Event$1, WeakSet: WeakSet$1});
-  var observe = {
-    attributechanged: attributechanged({Event: Event$1}),
-    connected: lifecycle,
-    disconnected: lifecycle
-  };
-
   var regularElements = {
+    Event: Event$1,
+    WeakSet: WeakSet$1,
     document: document,
     define: function (selector, options) {
       if (bootstrap) {
@@ -373,6 +368,14 @@ var regularElements = (function () {
         })
       );
     }
+  };
+
+  // passing along regularElements as poly for Event and WeakSet
+  var lifecycle = disconnected(regularElements);
+  var observe = {
+    attributechanged: attributechanged(regularElements),
+    connected: lifecycle,
+    disconnected: lifecycle
   };
 
   function changes(records) {
@@ -439,6 +442,9 @@ var regularElements = (function () {
     setupListener(node, options, 'connected', true);
   }
 
+  
+  
+  
   
 
   return regularElements;
