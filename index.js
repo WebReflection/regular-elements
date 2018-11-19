@@ -62,21 +62,39 @@ var regularElements = (function () {
   try {
     $WeakSet = (new WeakSet).constructor;
   } catch(o_O) {
-    var i = 0;
-    o_O = ($WeakSet = function WeakSet() {
-      this.$ = ['__', Math.random(), i++, '__'].join('ws');
-    }).prototype;
-    o_O.add = function (O) {
-      if (!this.has(O))
-        Object.defineProperty(O, this.$, {value:true, configurable:true});
-      return this
-    };
-    o_O.has = function (O) {
-      return this.hasOwnProperty.call(O, this.$);
-    };
-    o_O.delete = function (O) {
-      return delete O[this.$];
-    };
+    try {
+      // IE11 apparently has WeakMap but no WeakSet
+      o_O = ($WeakSet = new WeakMap && function () {
+        this.$ = new WeakMap;
+      }).prototype;
+      o_O.add = function (O) {
+        this.$.set(O, 0);
+        return this;
+      };
+      o_O.has = function (O) {
+        return this.$.has(O);
+      };
+      o_O.delete = function (O) {
+        return this.$.delete(O);
+      };
+    } catch(o_O) {
+      // all other browsers
+      var i = 0;
+      o_O = ($WeakSet = function () {
+        this.$ = ['__', Math.random(), i++, '__'].join('ws');
+      }).prototype;
+      o_O.add = function (O) {
+        if (!this.has(O))
+          Object.defineProperty(O, this.$, {value:true, configurable:true});
+        return this;
+      };
+      o_O.has = function (O) {
+        return this.hasOwnProperty.call(O, this.$);
+      };
+      o_O.delete = function (O) {
+        return delete O[this.$];
+      };
+    }
   }
 
   var WeakSet$1 = $WeakSet;

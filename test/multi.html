@@ -15,13 +15,13 @@
     }
 
     regularElements.define('.clicker', {
-      onconnected() {
+      onconnected: function () {
         this.addEventListener('click', theClicker);
       }
     });
 
     regularElements.define('.hi-five', {
-      onconnected() {
+      onconnected: function () {
         this.textContent += ' 🖐 ';
       }
     });
