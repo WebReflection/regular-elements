@@ -41,6 +41,12 @@ regularElements.define(
 
 The _API_ is similar to the `customElements` one, included `.get(selector)` and `.whenDefined(selector)`.
 
+## What About Components ?
+
+This module brings literally only those 3 primitives to the table, but fear not, [wickedElements](https://github.com/WebReflection/wicked-elements) are a super thin wrapper that will bring 100% prototypal based components on top of these hooks, providing a private context per each component / node pair.
+
+Trust me, the name wasn't chosen by accident, components made this way are absolutely wicked!
+
 ### Compatibility
 
 [Even IE 9](https://webreflection.github.io/regular-elements/test/), but in order to also use `whenDefined` method, a `Promise` polyfill needs to be available on the global scope.
