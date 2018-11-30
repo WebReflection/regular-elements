@@ -1,5 +1,8 @@
 # regularElements
 
+[![Build Status](https://travis-ci.com/WebReflection/regular-elements.svg?branch=master)](https://travis-ci.com/WebReflection/regular-elements) ![WebReflection status](https://offline.report/status/webreflection.svg)
+
+
 Everything I love about Custom Elements made available for any node, and through CSS selectors.
 
 No Custom Elements, no Shadow DOM, forget about polyfills and classes, use just the good old HTML, exponentially glorified for every browser and in [less than 2Kb library](https://unpkg.com/regular-elements).
