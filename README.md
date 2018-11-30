@@ -1,6 +1,6 @@
 # regularElements
 
-[![Build Status](https://travis-ci.com/WebReflection/regular-elements.svg?branch=master)](https://travis-ci.com/WebReflection/regular-elements) ![WebReflection status](https://offline.report/status/webreflection.svg)
+[![Build Status](https://travis-ci.com/WebReflection/regular-elements.svg?branch=master)](https://travis-ci.com/WebReflection/regular-elements) [![Greenkeeper badge](https://badges.greenkeeper.io/WebReflection/regular-elements.svg)](https://greenkeeper.io/) ![WebReflection status](https://offline.report/status/webreflection.svg)
 
 
 Everything I love about Custom Elements made available for any node, and through CSS selectors.
