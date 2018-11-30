@@ -21,7 +21,7 @@
     "attributechanged": "^0.2.0",
     "disconnected": "^0.1.6",
     "rollup": "^0.67.3",
-    "uglify-js": "^2.8.29"
+    "uglify-js": "^3.4.9"
   },
   "directories": {
     "test": "test"
