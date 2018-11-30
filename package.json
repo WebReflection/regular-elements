@@ -19,7 +19,7 @@
   "devDependencies": {
     "ascjs": "^2.5.1",
     "attributechanged": "^0.2.0",
-    "disconnected": "^0.1.5",
+    "disconnected": "^0.1.6",
     "rollup": "^0.67.3",
     "uglify-js": "^2.8.29"
   },
