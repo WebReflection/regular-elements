@@ -25,6 +25,7 @@ import matches from '@ungap/element-matches';
 import attributechanged from 'attributechanged';
 import disconnected from 'disconnected';
 
+var config = {Event: CustomEvent, WeakSet: WeakSet};
 var contains = document.contains || function (el) {
   while (el && el !== this) el = el.parentNode;
   return this === el;
@@ -75,9 +76,9 @@ var regularElements = {
 };
 
 // passing along regularElements as poly for Event and WeakSet
-var lifecycle = disconnected(regularElements);
+var lifecycle = disconnected(config);
 var observe = {
-  attributechanged: attributechanged(regularElements),
+  attributechanged: attributechanged(config),
   connected: lifecycle,
   disconnected: lifecycle
 };
