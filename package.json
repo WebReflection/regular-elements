@@ -6,27 +6,30 @@
   "module": "esm/index.js",
   "unpkg": "min.js",
   "scripts": {
-    "build": "npm run 3rd-parts && ascjs esm cjs && rollup --config rollup.config.js && npm run cleanup && npm run min && npm run size",
-    "3rd-parts": "npm run 3rd-attributechanged && npm run 3rd-disconnected",
-    "3rd-attributechanged": "cp node_modules/attributechanged/esm/index.js esm/3rd/attributechanged.js",
-    "3rd-disconnected": "cp node_modules/disconnected/esm/index.js esm/3rd/disconnected.js",
+    "build": "ascjs esm cjs && rollup --config rollup.config.js && npm run cleanup && npm run min && npm run size",
     "min": "echo \"/*! (c) Andrea Giammarchi (ISC) */$(uglifyjs index.js --support-ie8 -c -m)\" > min.js",
     "size": "cat min.js | gzip -9 | wc -c && cat min.js | brotli | wc -c",
-    "cleanup": "cat index.js|sed 's/(exports)/()/'|sed 's/return exports;/return regularElements;/'|sed -e 's/exports.*;//g'|sed 's/({})/()/'>index.clean&&mv index.clean index.js"
+    "cleanup": "cat index.js|sed 's/(exports)/(document)/'|sed 's/return exports;/return regularElements;/'|sed -e 's/exports.*;//g'|sed 's/({})/(document)/'>index.clean&&mv index.clean index.js"
   },
   "author": "Andrea Giammarchi",
   "license": "ISC",
   "devDependencies": {
     "ascjs": "^2.5.1",
-    "attributechanged": "^0.2.0",
-    "disconnected": "^0.1.6",
     "rollup": "^0.67.3",
-    "uglify-js": "^3.4.9"
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "uglify-js": "^2.8.29"
   },
   "directories": {
     "test": "test"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@ungap/assign": "^0.1.0",
+    "@ungap/custom-event": "^0.1.2",
+    "@ungap/element-matches": "^0.1.0",
+    "@ungap/weakset": "^0.1.5",
+    "attributechanged": "^0.2.0",
+    "disconnected": "^0.1.6"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/WebReflection/regular-elements.git"
