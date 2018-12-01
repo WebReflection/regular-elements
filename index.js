@@ -253,7 +253,7 @@ var regularElements = (function (document) {
    * PERFORMANCE OF THIS SOFTWARE.
    */
 
-  var config = {Event: CustomEvent$1, WeakSet: WeakSet$1};
+  var poly = {Event: CustomEvent$1, WeakSet: WeakSet$1};
   var contains = document.contains || function (el) {
     while (el && el !== this) el = el.parentNode;
     return this === el;
@@ -304,9 +304,9 @@ var regularElements = (function (document) {
   };
 
   // passing along regularElements as poly for Event and WeakSet
-  var lifecycle = disconnected(config);
+  var lifecycle = disconnected(poly);
   var observe = {
-    attributechanged: attributechanged(config),
+    attributechanged: attributechanged(poly),
     connected: lifecycle,
     disconnected: lifecycle
   };

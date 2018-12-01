@@ -26,7 +26,7 @@ const matches = (m => m.__esModule ? m.default : m)(require('@ungap/element-matc
 const attributechanged = (m => m.__esModule ? m.default : m)(require('attributechanged'));
 const disconnected = (m => m.__esModule ? m.default : m)(require('disconnected'));
 
-var config = {Event: CustomEvent, WeakSet: WeakSet};
+var poly = {Event: CustomEvent, WeakSet: WeakSet};
 var contains = document.contains || function (el) {
   while (el && el !== this) el = el.parentNode;
   return this === el;
@@ -77,9 +77,9 @@ var regularElements = {
 };
 
 // passing along regularElements as poly for Event and WeakSet
-var lifecycle = disconnected(config);
+var lifecycle = disconnected(poly);
 var observe = {
-  attributechanged: attributechanged(config),
+  attributechanged: attributechanged(poly),
   connected: lifecycle,
   disconnected: lifecycle
 };
