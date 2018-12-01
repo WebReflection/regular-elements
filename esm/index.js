@@ -16,15 +16,19 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-import Event from './poorly/event.js';
-import WeakSet from './poorly/weakset.js';
-import assign from './poorly/assign.js';
+import CustomEvent from '@ungap/custom-event';
+import WeakSet from '@ungap/weakset';
 
-import contains from './poly/contains.js';
-import matches from './poly/matches.js';
+import assign from '@ungap/assign';
+import matches from '@ungap/element-matches';
 
-import attributechanged from './3rd/attributechanged.js';
-import disconnected from './3rd/disconnected.js';
+import attributechanged from 'attributechanged';
+import disconnected from 'disconnected';
+
+var contains = document.contains || function (el) {
+  while (el && el !== this) el = el.parentNode;
+  return this === el;
+};
 
 var bootstrap = true;
 
@@ -34,14 +38,10 @@ var waiting = {};
 var known = {};
 
 var regularElements = {
-  Event: Event,
-  WeakSet: WeakSet,
-  assign: assign,
-  document: document,
   define: function (selector, options) {
     if (bootstrap) {
       bootstrap = false;
-      init(regularElements.document);
+      init(document);
     }
     var type = typeof selector;
     if (type === 'string') {
@@ -83,7 +83,6 @@ var observe = {
 };
 
 export default regularElements;
-export {regularElements, assign, Event, WeakSet};
 
 function changes(records) {
   for (var i = 0, length = records.length; i < length; i++)
@@ -110,7 +109,7 @@ function init(doc) {
 
 function ready() {
   if (query.length)
-    setupList(regularElements.document.querySelectorAll(query), true);
+    setupList(document.querySelectorAll(query), true);
 }
 
 function setup(node) {
@@ -118,7 +117,7 @@ function setup(node) {
   for (var ws, css, i = 0, length = query.length; i < length; i++) {
     css = query[i];
     ws = known[css] || (known[css] = new WeakSet);
-    if (!ws.has(node) && matches(node, query[i])) {
+    if (!ws.has(node) && matches.call(node, query[i])) {
       ws.add(node);
       setupListeners(node, config[i]);
     }
@@ -138,8 +137,8 @@ function setupListener(node, options, type, dispatch) {
   if (method) {
     observe[type](node, options.attributeFilter)
       .addEventListener(type, method, false);
-    if (dispatch && contains.call(regularElements.document, node))
-      node.dispatchEvent(new Event(type));
+    if (dispatch && contains.call(document, node))
+      node.dispatchEvent(new CustomEvent(type));
   }
 }
 

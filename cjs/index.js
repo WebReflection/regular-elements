@@ -17,15 +17,19 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-const Event = (m => m.__esModule ? m.default : m)(require('./poorly/event.js'));
-const WeakSet = (m => m.__esModule ? m.default : m)(require('./poorly/weakset.js'));
-const assign = (m => m.__esModule ? m.default : m)(require('./poorly/assign.js'));
+const CustomEvent = (m => m.__esModule ? m.default : m)(require('@ungap/custom-event'));
+const WeakSet = (m => m.__esModule ? m.default : m)(require('@ungap/weakset'));
 
-const contains = (m => m.__esModule ? m.default : m)(require('./poly/contains.js'));
-const matches = (m => m.__esModule ? m.default : m)(require('./poly/matches.js'));
+const assign = (m => m.__esModule ? m.default : m)(require('@ungap/assign'));
+const matches = (m => m.__esModule ? m.default : m)(require('@ungap/element-matches'));
 
-const attributechanged = (m => m.__esModule ? m.default : m)(require('./3rd/attributechanged.js'));
-const disconnected = (m => m.__esModule ? m.default : m)(require('./3rd/disconnected.js'));
+const attributechanged = (m => m.__esModule ? m.default : m)(require('attributechanged'));
+const disconnected = (m => m.__esModule ? m.default : m)(require('disconnected'));
+
+var contains = document.contains || function (el) {
+  while (el && el !== this) el = el.parentNode;
+  return this === el;
+};
 
 var bootstrap = true;
 
@@ -35,14 +39,10 @@ var waiting = {};
 var known = {};
 
 var regularElements = {
-  Event: Event,
-  WeakSet: WeakSet,
-  assign: assign,
-  document: document,
   define: function (selector, options) {
     if (bootstrap) {
       bootstrap = false;
-      init(regularElements.document);
+      init(document);
     }
     var type = typeof selector;
     if (type === 'string') {
@@ -84,10 +84,6 @@ var observe = {
 };
 
 Object.defineProperty(exports, '__esModule', {value: true}).default = regularElements;
-exports.regularElements = regularElements;
-exports.assign = assign;
-exports.Event = Event;
-exports.WeakSet = WeakSet;
 
 function changes(records) {
   for (var i = 0, length = records.length; i < length; i++)
@@ -114,7 +110,7 @@ function init(doc) {
 
 function ready() {
   if (query.length)
-    setupList(regularElements.document.querySelectorAll(query), true);
+    setupList(document.querySelectorAll(query), true);
 }
 
 function setup(node) {
@@ -122,7 +118,7 @@ function setup(node) {
   for (var ws, css, i = 0, length = query.length; i < length; i++) {
     css = query[i];
     ws = known[css] || (known[css] = new WeakSet);
-    if (!ws.has(node) && matches(node, query[i])) {
+    if (!ws.has(node) && matches.call(node, query[i])) {
       ws.add(node);
       setupListeners(node, config[i]);
     }
@@ -142,8 +138,8 @@ function setupListener(node, options, type, dispatch) {
   if (method) {
     observe[type](node, options.attributeFilter)
       .addEventListener(type, method, false);
-    if (dispatch && contains.call(regularElements.document, node))
-      node.dispatchEvent(new Event(type));
+    if (dispatch && contains.call(document, node))
+      node.dispatchEvent(new CustomEvent(type));
   }
 }
 
