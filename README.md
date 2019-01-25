@@ -61,7 +61,7 @@ Following an example of how you could bring a `Promise` polyfill only in legacy 
 
 ## Best Practices
 
-Since, like it is for Cuastom Elements, you can define one selector per time,
+Since, like it is for Custom Elements, you can define one selector per time,
 it is suggested to not use too generic selectors such `a` or `button` in case you'd like to compose behaviors.
 
 A single node can indeed behave in various way, as long as it matches one or more defined selector.
