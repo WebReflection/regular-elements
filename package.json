@@ -17,7 +17,7 @@
     "ascjs": "^2.5.1",
     "rollup": "^1.0.0",
     "rollup-plugin-node-resolve": "^4.0.0",
-    "uglify-js": "^2.8.29"
+    "uglify-js": "^3.4.10"
   },
   "directories": {
     "test": "test"
