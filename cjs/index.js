@@ -17,14 +17,14 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-const CustomEvent = (m => m.__esModule ? m.default : m)(require('@ungap/custom-event'));
-const WeakSet = (m => m.__esModule ? m.default : m)(require('@ungap/weakset'));
+const CustomEvent = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@ungap/custom-event'));
+const WeakSet = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@ungap/weakset'));
 
-const assign = (m => m.__esModule ? m.default : m)(require('@ungap/assign'));
-const matches = (m => m.__esModule ? m.default : m)(require('@ungap/element-matches'));
+const assign = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@ungap/assign'));
+const matches = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@ungap/element-matches'));
 
-const attributechanged = (m => m.__esModule ? m.default : m)(require('attributechanged'));
-const disconnected = (m => m.__esModule ? m.default : m)(require('disconnected'));
+const attributechanged = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('attributechanged'));
+const disconnected = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('disconnected'));
 
 var poly = {Event: CustomEvent, WeakSet: WeakSet};
 var contains = document.contains || function (el) {
