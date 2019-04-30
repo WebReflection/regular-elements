@@ -269,14 +269,17 @@ var regularElements = (function (document) {
       }
       var type = typeof selector;
       if (type === 'string') {
-        if (-1 < query.indexOf(selector))
+        if (get(selector))
           throw new Error('duplicated: ' + selector);
         query.push(selector);
         config.push(options || {});
         ready();
         if (selector in waiting) {
-          waiting[selector](config[config.length - 1]);
-          delete waiting[selector];
+          var cfg = get(selector);
+          if (cfg) {
+            waiting[selector](cfg);
+            delete waiting[selector];
+          }
         }
       } else {
         if (type !== "object" || selector.nodeType !== 1)
@@ -284,13 +287,10 @@ var regularElements = (function (document) {
         setupListeners(selector, options || {});
       }
     },
-    get: function (selector) {
-      var i = query.indexOf(selector);
-      return i < 0 ? null : assign({}, config[i]);
-    },
+    get: get,
     whenDefined: function (selector) {
       return Promise.resolve(
-        regularElements.get(selector) ||
+        get(selector) ||
         new Promise(function ($) {
           waiting[selector] = $;
         })
@@ -309,6 +309,11 @@ var regularElements = (function (document) {
   function changes(records) {
     for (var i = 0, length = records.length; i < length; i++)
       setupList(records[i].addedNodes, false);
+  }
+
+  function get(selector) {
+    var i = query.indexOf(selector);
+    return i < 0 ? null : assign({}, config[i]);
   }
 
   function init(doc) {

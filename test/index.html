@@ -10,8 +10,8 @@
   <script>
   this.onload = function () {
     var definition;
-    regularElements.whenDefined('button').then(function (test) {
-      if (!test || !regularElements.get('button'))
+    regularElements.whenDefined('button').then(function (definition) {
+      if (!definition || !regularElements.get('button'))
         throw new Error('button not defined');
       document.body.insertBefore(
         document.createElement('p'),
