@@ -54,9 +54,10 @@ Trust me, the name wasn't chosen by accident, components made this way are absol
 
 [Even IE 9](https://webreflection.github.io/regular-elements/test/), but in order to also use `whenDefined` method, a `Promise` polyfill needs to be available on the global scope.
 
-Following an example of how you could bring a `Promise` polyfill only in legacy browsers, through a single script on top of any page that needs it.
+Following an example of how you could bring a `Promise` and `WeakMap` polyfill only in legacy browsers (IE9 and IE10), through a single script on top of any page that needs it.
 ```html
 <script>this.Promise||document.write('<script src="https://unpkg.com/es6-promise@4.2.5/dist/es6-promise.auto.min.js"><\x2fscript>')</script>
+<script>this.WeakMap||document.write('<script src="https://unpkg.com/@ungap/weakmap@0.1.4/min.js"><\x2fscript>')</script>
 ```
 
 ## Best Practices
