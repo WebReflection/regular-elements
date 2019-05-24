@@ -13,6 +13,12 @@
   },
   "author": "Andrea Giammarchi",
   "license": "ISC",
+  "greenkeeper": {
+    "ignore": [
+      "rollup",
+      "rollup-plugin-node-resolve"
+    ]
+  },
   "devDependencies": {
     "ascjs": "^3.0.1",
     "rollup": "^1.10.1",
@@ -28,7 +34,7 @@
     "@ungap/element-matches": "^0.1.0",
     "@ungap/weakset": "^0.1.5",
     "attributechanged": "^0.2.0",
-    "disconnected": "^0.2.0"
+    "disconnected": "^0.2.1"
   },
   "repository": {
     "type": "git",
