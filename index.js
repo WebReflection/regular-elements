@@ -127,17 +127,20 @@ var regularElements = (function (document) {
     var Event = poly.Event;
     var WeakSet = poly.WeakSet;
     var notObserving = true;
-    var observer = new WeakSet;
+    var observer = null;
     return function observe(node) {
       if (notObserving) {
         notObserving = !notObserving;
+        observer = new WeakSet;
         startObserving(node.ownerDocument);
       }
       observer.add(node);
       return node;
     };
     function startObserving(document) {
-      var dispatched = null;
+      var dispatched = {};
+      dispatched[CONNECTED] = new WeakSet;
+      dispatched[DISCONNECTED] = new WeakSet;
       try {
         (new MutationObserver(changes)).observe(
           document,
@@ -173,7 +176,6 @@ var regularElements = (function (document) {
         );
       }
       function changes(records) {
-        dispatched = new Tracker;
         for (var
           record,
           length = records.length,
@@ -183,7 +185,6 @@ var regularElements = (function (document) {
           dispatchAll(record.removedNodes, DISCONNECTED, CONNECTED);
           dispatchAll(record.addedNodes, CONNECTED, DISCONNECTED);
         }
-        dispatched = null;
       }
       function dispatchAll(nodes, type, counter) {
         for (var
@@ -222,10 +223,6 @@ var regularElements = (function (document) {
           i = 0; i < length;
           dispatchTarget(children[i++], event, type, counter)
         );
-      }
-      function Tracker() {
-        this[CONNECTED] = new WeakSet;
-        this[DISCONNECTED] = new WeakSet;
       }
     }
   }
