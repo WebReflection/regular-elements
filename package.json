@@ -20,7 +20,7 @@
     ]
   },
   "devDependencies": {
-    "ascjs": "^3.0.1",
+    "ascjs": "^4.0.0",
     "rollup": "^1.10.1",
     "rollup-plugin-node-resolve": "^4.2.3",
     "uglify-js": "^3.5.9"
