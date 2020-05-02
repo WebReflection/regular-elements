@@ -29,7 +29,7 @@
     "test": "test"
   },
   "dependencies": {
-    "@ungap/assign": "^0.1.0",
+    "@ungap/assign": "^0.2.0",
     "@ungap/custom-event": "^0.2.0",
     "@ungap/element-matches": "^0.1.0",
     "@ungap/weakset": "^0.1.5",
