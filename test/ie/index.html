@@ -3,31 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>regular-elements</title>
-  <script type="module">
-  import(
-    /^(?:localhost|[::1]|127(?:.d+){3})$/.test(location.hostname) ?
-    '../esm/index.js' :
-    'https://unpkg.com/regular-elements?module'
-  )
-  .then(({define, get, whenDefined}) => {
-    whenDefined('button').then(() => {
-      console.log('button', get('button'));
+  <title>Regular Elements</title>
+  <script src="../../index.js"></script>
+  <script>
+  this.onload = function () {
+    regularElements.whenDefined('button').then(function () {
+      console.log('button', regularElements.get('button'));
     });
-    define('button', {
-      connectedCallback() {
+    regularElements.define('button', {
+      connectedCallback: function () {
         this.textContent += ' live! Click me to erase the body';
         this.addEventListener('click', function () {
           document.body.textContent = '';
         });
       },
-      disconnectedCallback() {
+      disconnectedCallback: function () {
         document.body.appendChild(
           document.createElement('p')
         ).textContent = 'bye bye';
       },
       observedAttributes: ['test'],
-      attributeChangedCallback(attributeName, oldValue, newValue) {
+      attributeChangedCallback: function (attributeName, oldValue, newValue) {
         document.body.appendChild(
           document.createElement('p')
         ).textContent = [
@@ -38,10 +34,10 @@
         ].join(' ');
       }
     });
-    const button = document.querySelector('button');
+    var button = document.querySelector('button');
     button.setAttribute('test', 'OK');
     button.setAttribute('nope', 'OK');
-  });
+  };
   </script>
 </head>
 <body>

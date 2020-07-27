@@ -1,379 +1,201 @@
-var regularElements = (function (document) {
+self.regularElements = (function (exports) {
   'use strict';
 
-  /*! (c) Andrea Giammarchi - ISC */
-  var self = null || /* istanbul ignore next */ {};
-  self.CustomEvent = typeof CustomEvent === 'function' ?
-    CustomEvent :
-    (function (__p__) {
-      CustomEvent[__p__] = new CustomEvent('').constructor[__p__];
-      return CustomEvent;
-      function CustomEvent(type, init) {
-        if (!init) init = {};
-        var e = document.createEvent('CustomEvent');
-        e.initCustomEvent(type, !!init.bubbles, !!init.cancelable, init.detail);
-        return e;
-      }
-    }('prototype'));
-  var CustomEvent$1 = self.CustomEvent;
+  var set = new Set();
+  var observer = new MutationObserver(function (records) {
+    set.forEach(invoke, records);
+  });
+  observer.observe(document, {
+    subtree: true,
+    childList: true
+  });
+  set.observer = observer;
 
-  /*! (c) Andrea Giammarchi - ISC */
-  var self$1 = null || /* istanbul ignore next */ {};
-  try { self$1.WeakSet = WeakSet; }
-  catch (WeakSet) {
-    // requires a global WeakMap (IE11+)
-    (function (WeakMap) {
-      var all = new WeakMap;
-      var proto = WeakSet.prototype;
-      proto.add = function (value) {
-        return all.get(this).set(value, 1), this;
-      };
-      proto.delete = function (value) {
-        return all.get(this).delete(value);
-      };
-      proto.has = function (value) {
-        return all.get(this).has(value);
-      };
-      self$1.WeakSet = WeakSet;
-      function WeakSet(iterable) {
-        all.set(this, new WeakMap);
-        if (iterable)
-          iterable.forEach(this.add, this);
-      }
-    }(WeakMap));
+  function invoke(callback) {
+    callback(this, observer);
   }
-  var WeakSet$1 = self$1.WeakSet;
 
-  /*! (c) Andrea Giammarchi - ISC */
-  var assign = Object.assign || function (target) {
-    for (var o, i = 1; i < arguments.length; i++) {
-      o = arguments[i] || {};
-      for (var k in o) {
-        if (o.hasOwnProperty(k))
-          target[k] = o[k];
-      }
+  var wm = new WeakMap();
+  var observer$1 = set.observer;
+
+  var attributeChanged = function attributeChanged(records) {
+    var _loop = function _loop(i, length) {
+      var _records$i = records[i],
+          target = _records$i.target,
+          attributeName = _records$i.attributeName,
+          oldValue = _records$i.oldValue;
+      var newValue = target.getAttribute(attributeName);
+      wm.get(target).a[attributeName].forEach(function (attributeChangedCallback) {
+        attributeChangedCallback.call(target, attributeName, oldValue, newValue);
+      });
+    };
+
+    for (var i = 0, length = records.length; i < length; i++) {
+      _loop(i);
     }
+  };
+
+  var invoke$1 = function invoke(nodes, key) {
+    for (var i = 0, length = nodes.length; i < length; i++) {
+      var target = nodes[i];
+      if (wm.has(target)) wm.get(target)[key].forEach(call, target);
+      invoke(target.children || [], key);
+    }
+  };
+
+  var mainLoop = function mainLoop(records) {
+    for (var i = 0, length = records.length; i < length; i++) {
+      var _records$i2 = records[i],
+          addedNodes = _records$i2.addedNodes,
+          removedNodes = _records$i2.removedNodes;
+      invoke$1(addedNodes, 'c');
+      attributeChanged(sao.takeRecords());
+      invoke$1(removedNodes, 'd');
+    }
+  };
+
+  var sao = new MutationObserver(attributeChanged);
+
+  var set$1 = function set(target) {
+    var sets = {
+      a: {},
+      c: new Set(),
+      d: new Set()
+    };
+    wm.set(target, sets);
+    return sets;
+  };
+
+  set.add(mainLoop);
+  var asCustomElement = (function (target, _ref) {
+    var connectedCallback = _ref.connectedCallback,
+        disconnectedCallback = _ref.disconnectedCallback,
+        observedAttributes = _ref.observedAttributes,
+        attributeChangedCallback = _ref.attributeChangedCallback;
+    mainLoop(observer$1.takeRecords());
+
+    var _ref2 = wm.get(target) || set$1(target),
+        a = _ref2.a,
+        c = _ref2.c,
+        d = _ref2.d;
+
+    if (observedAttributes) {
+      sao.observe(target, {
+        attributes: true,
+        attributeOldValue: true,
+        attributeFilter: observedAttributes
+      });
+      observedAttributes.forEach(function (attributeName) {
+        (a[attributeName] || (a[attributeName] = new Set())).add(attributeChangedCallback);
+        if (target.hasAttribute(attributeName)) attributeChangedCallback.call(target, attributeName, null, target.getAttribute(attributeName));
+      });
+    }
+
+    if (disconnectedCallback) d.add(disconnectedCallback);
+
+    if (connectedCallback) {
+      c.add(connectedCallback); // if (target.isConnected) // No IE11/Edge support
+
+      if (!(target.ownerDocument.compareDocumentPosition(target) & target.DOCUMENT_POSITION_DISCONNECTED)) connectedCallback.call(target);
+    }
+
     return target;
-  };
+  });
 
-  /*! (c) Andrea Giammarchi - ISC */
-  // borrowed from https://github.com/WebReflection/dom4/blob/master/src/dom4.js#L130
-  var elementMatches = (function (indexOf) {
-    return 'matches' in document.documentElement ?
-      function (selector) {
-        return this.matches(selector);
-      } :
-      function (selector) {
-        var el = this;
-        return (
-          el.matchesSelector ||
-          el.webkitMatchesSelector ||
-          el.khtmlMatchesSelector ||
-          el.mozMatchesSelector ||
-          el.msMatchesSelector ||
-          el.oMatchesSelector ||
-          fallback
-        ).call(el, selector);
-      };
-    function fallback(selector) {
-      var parentNode = this.parentNode;
-      return !!parentNode && -1 < indexOf.call(
-        parentNode.querySelectorAll(selector),
-        this
-      );
-    }
-  }([].indexOf));
-
-  /*! (c) Andrea Giammarchi */
-  function attributechanged(poly) {  var Event = poly.Event;
-    return function observe(node, attributeFilter) {
-      var options = {attributes: true, attributeOldValue: true};
-      var filtered = attributeFilter instanceof Array && attributeFilter.length;
-      if (filtered)
-        options.attributeFilter = attributeFilter.slice(0);
-      try {
-        (new MutationObserver(changes)).observe(node, options);
-      } catch(o_O) {
-        options.handleEvent = filtered ? handleEvent : attrModified;
-        node.addEventListener('DOMAttrModified', options, true);
-      }
-      return node;
-    };
-    function attrModified(event) {
-      dispatchEvent(event.target, event.attrName, event.prevValue);
-    }
-    function dispatchEvent(node, attributeName, oldValue) {
-      var event = new Event('attributechanged');
-      event.attributeName = attributeName;
-      event.oldValue = oldValue;
-      event.newValue = node.getAttribute(attributeName);
-      node.dispatchEvent(event);
-    }
-    function changes(records) {
-      for (var record, i = 0, length = records.length; i < length; i++) {
-        record = records[i];
-        dispatchEvent(record.target, record.attributeName, record.oldValue);
-      }
-    }
-    function handleEvent(event) {
-      if (-1 < this.attributeFilter.indexOf(event.attrName))
-        attrModified(event);
-    }
+  function call(back) {
+    back.call(this);
   }
 
-  /*! (c) Andrea Giammarchi */
-  function disconnected(poly) {  var CONNECTED = 'connected';
-    var DISCONNECTED = 'dis' + CONNECTED;
-    var Event = poly.Event;
-    var WeakSet = poly.WeakSet;
-    var notObserving = true;
-    var observer = null;
-    return function observe(node) {
-      if (notObserving) {
-        notObserving = !notObserving;
-        observer = new WeakSet;
-        startObserving(node.ownerDocument);
-      }
-      observer.add(node);
-      return node;
-    };
-    function startObserving(document) {
-      var dispatched = {};
-      dispatched[CONNECTED] = new WeakSet;
-      dispatched[DISCONNECTED] = new WeakSet;
-      try {
-        (new MutationObserver(changes)).observe(
-          document,
-          {subtree: true, childList: true}
-        );
-      }
-      catch(o_O) {
-        var timer = 0;
-        var records = [];
-        var reschedule = function (record) {
-          records.push(record);
-          clearTimeout(timer);
-          timer = setTimeout(
-            function () {
-              changes(records.splice(timer = 0, records.length));
-            },
-            0
-          );
-        };
-        document.addEventListener(
-          'DOMNodeRemoved',
-          function (event) {
-            reschedule({addedNodes: [], removedNodes: [event.target]});
-          },
-          true
-        );
-        document.addEventListener(
-          'DOMNodeInserted',
-          function (event) {
-            reschedule({addedNodes: [event.target], removedNodes: []});
-          },
-          true
-        );
-      }
-      function changes(records) {
-        for (var
-          record,
-          length = records.length,
-          i = 0; i < length; i++
-        ) {
-          record = records[i];
-          dispatchAll(record.removedNodes, DISCONNECTED, CONNECTED);
-          dispatchAll(record.addedNodes, CONNECTED, DISCONNECTED);
-        }
-      }
-      function dispatchAll(nodes, type, counter) {
-        for (var
-          node,
-          event = new Event(type),
-          length = nodes.length,
-          i = 0; i < length;
-          (node = nodes[i++]).nodeType === 1 &&
-          dispatchTarget(node, event, type, counter)
-        );
-      }
-      function dispatchTarget(node, event, type, counter) {
-        if (observer.has(node) && !dispatched[type].has(node)) {
-          dispatched[counter].delete(node);
-          dispatched[type].add(node);
-          node.dispatchEvent(event);
-          /*
-          // The event is not bubbling (perf reason: should it?),
-          // hence there's no way to know if
-          // stop/Immediate/Propagation() was called.
-          // Should DOM Level 0 work at all?
-          // I say it's a YAGNI case for the time being,
-          // and easy to implement in user-land.
-          if (!event.cancelBubble) {
-            var fn = node['on' + type];
-            if (fn)
-              fn.call(node, event);
-          }
-          */
-        }
-        for (var
-          // apparently is node.children || IE11 ... ^_^;;
-          // https://github.com/WebReflection/disconnected/issues/1
-          children = node.children || [],
-          length = children.length,
-          i = 0; i < length;
-          dispatchTarget(children[i++], event, type, counter)
-        );
-      }
-    }
-  }
-
-  /**
-   * ISC License
-   *
-   * Copyright (c) 2018, Andrea Giammarchi, @WebReflection
-   *
-   * Permission to use, copy, modify, and/or distribute this software for any
-   * purpose with or without fee is hereby granted, provided that the above
-   * copyright notice and this permission notice appear in all copies.
-   *
-   * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-   * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-   * AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-   * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-   * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
-   * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-   * PERFORMANCE OF THIS SOFTWARE.
-   */
-
-  var poly = {Event: CustomEvent$1, WeakSet: WeakSet$1};
-  var contains = document.contains || function (el) {
-    while (el && el !== this) el = el.parentNode;
-    return this === el;
-  };
-
-  var bootstrap = true;
-
-  var query = [];
   var config = [];
-  var waiting = {};
-  var known = {};
+  var query = [];
+  var defined = {};
 
-  var regularElements = {
-    define: function (selector, options) {
-      if (bootstrap) {
-        bootstrap = false;
-        init(document);
-      }
-      var type = typeof selector;
-      if (type === 'string') {
-        if (get(selector))
-          throw new Error('duplicated: ' + selector);
-        query.push(selector);
-        config.push(options || {});
-        ready();
-        if (selector in waiting) {
-          var cfg = get(selector);
-          if (cfg) {
-            waiting[selector](cfg);
-            delete waiting[selector];
-          }
-        }
-      } else {
-        if (type !== "object" || selector.nodeType !== 1)
-          throw new Error('undefinable: ' + selector);
-        setupListeners(selector, options || {});
-      }
-    },
-    get: get,
-    whenDefined: function (selector) {
-      return Promise.resolve(
-        get(selector) ||
-        new Promise(function ($) {
-          waiting[selector] = $;
-        })
-      );
-    }
+  var upgradeNodes = function upgradeNodes(_ref) {
+    var addedNodes = _ref.addedNodes;
+    setupList(addedNodes);
   };
 
-  // passing along regularElements as poly for Event and WeakSet
-  var lifecycle = disconnected(poly);
-  var observe = {
-    attributechanged: attributechanged(poly),
-    connected: lifecycle,
-    disconnected: lifecycle
+  var setupList = function setupList(nodes) {
+    query.forEach.call(nodes, upgrade);
   };
 
-  function changes(records) {
-    for (var i = 0, length = records.length; i < length; i++)
-      setupList(records[i].addedNodes, false);
-  }
+  set.add(function (records) {
+    records.forEach(upgradeNodes);
+  });
+  var define = function define(selector, options) {
+    if (get(selector)) throw new Error('duplicated: ' + selector);
+    query.push(selector);
+    config.push({
+      o: options,
+      m: new WeakMap()
+    });
+    setupList(document.querySelectorAll(selector));
+    whenDefined(selector);
 
-  function get(selector) {
+    defined[selector]._();
+  };
+  var get = function get(selector) {
     var i = query.indexOf(selector);
-    return i < 0 ? null : assign({}, config[i]);
-  }
+    return i < 0 ? void 0 : config[i].o;
+  };
+  var upgrade = function upgrade(node) {
+    query.forEach(setup, node);
+  };
+  var whenDefined = function whenDefined(selector) {
+    if (!(selector in defined)) {
+      var _,
+          $ = new Lie(function ($) {
+        _ = $;
+      });
 
-  function init(doc) {
-    try {
-      (new MutationObserver(changes))
-        .observe(doc, {subtree: true, childList: true});
+      defined[selector] = {
+        _: _,
+        $: $
+      };
     }
-    catch(o_O) {
-      doc.addEventListener(
-        'DOMNodeInserted',
-        function (e) {
-          changes([{addedNodes: [e.target]}]);
-        },
-        false
-      );
-    }
-    if (doc.readyState !== 'complete')
-      doc.addEventListener('DOMContentLoaded', ready, {once: true});
-  }
 
-  function ready() {
-    if (query.length)
-      setupList(document.querySelectorAll(query), true);
-  }
-
-  function setup(node) {
-    setupList(node.querySelectorAll(query), true);
-    for (var ws, css, i = 0, length = query.length; i < length; i++) {
-      css = query[i];
-      ws = known[css] || (known[css] = new WeakSet$1);
-      if (!ws.has(node) && elementMatches.call(node, query[i])) {
-        ws.add(node);
-        setupListeners(node, config[i]);
+    return defined[selector].$;
+  };
+  var Lie = typeof Promise === 'function' ? Promise : function (fn) {
+    var queue = [],
+        resolved = false;
+    fn(function () {
+      resolved = true;
+      queue.splice(0).forEach(then);
+    });
+    return {
+      then: then,
+      "catch": function _catch() {
+        return this;
       }
+    };
+
+    function then(fn) {
+      return resolved ? setTimeout(fn) : queue.push(fn), this;
+    }
+  };
+
+  function setup(selector, i) {
+    var querySelectorAll = this.querySelectorAll;
+
+    if (querySelectorAll) {
+      if ((this.matches || this.webkitMatchesSelector || this.msMatchesSelector).call(this, selector)) {
+        var _config$i = config[i],
+            m = _config$i.m,
+            o = _config$i.o;
+        if (!m.has(this)) m.set(asCustomElement(this, o), 0);
+      }
+
+      setupList(querySelectorAll.call(this, query));
     }
   }
 
-  function setupList(nodes, isElement) {
-    for (var node, i = 0, length = nodes.length; i < length; i++) {
-      node = nodes[i];
-      if (isElement || node.nodeType === 1)
-        setup(node);
-    }
-  }
+  exports.Lie = Lie;
+  exports.define = define;
+  exports.get = get;
+  exports.upgrade = upgrade;
+  exports.whenDefined = whenDefined;
 
-  function setupListener(node, options, type, dispatch) {
-    var method = options['on' + type];
-    if (method) {
-      observe[type](node, options.attributeFilter)
-        .addEventListener(type, method, false);
-      if (dispatch && contains.call(document, node))
-        node.dispatchEvent(new CustomEvent$1(type));
-    }
-  }
+  return exports;
 
-  function setupListeners(node, options) {
-    setupListener(node, options, 'attributechanged', false);
-    setupListener(node, options, 'disconnected', false);
-    setupListener(node, options, 'connected', true);
-  }
-
-  
-
-  return regularElements;
-
-}(document));
+}({}));

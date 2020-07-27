@@ -1,64 +1,53 @@
 # regularElements
 
-[![Build Status](https://travis-ci.com/WebReflection/regular-elements.svg?branch=master)](https://travis-ci.com/WebReflection/regular-elements) [![Greenkeeper badge](https://badges.greenkeeper.io/WebReflection/regular-elements.svg)](https://greenkeeper.io/) ![WebReflection status](https://offline.report/status/webreflection.svg)
+[![Build Status](https://travis-ci.com/WebReflection/regular-elements.svg?branch=master)](https://travis-ci.com/WebReflection/regular-elements) ![WebReflection status](https://offline.report/status/webreflection.svg)
 
+- - -
+
+**V1 Breaking Changes**
+
+  * the definition now follows standard naming convention
+  * callbacks are callbacks, not even driven anymore
+  * if present, `observedAttributes` must contain at least one attribute name
+  * browsers older than IE 11 might not work as expected
+  * the minified gzipped size is now *~1K*
+
+- - -
 
 Everything I love about Custom Elements made available for any node, and through CSS selectors.
 
-No Custom Elements, no Shadow DOM, forget about polyfills and classes, use just the good old HTML, exponentially glorified for every browser and in [less than 2Kb library](https://unpkg.com/regular-elements).
+No Custom Elements, no Shadow DOM, and no polyfills are needed.
 
 ```js
-regularElements.define('button.alive', {
-  // triggered once live
-  // if defined later on and already live
-  // it will trigger once (setup here)
-  onconnected() {
+// if loaded as <script>, it's exposed as global regularElements
+import {define} from 'regular-elements';
+
+define('button.alive', {
+  // lifecycle callbacks
+  connectedCallback() {
     this.disabled = false;
     this.classList.add('fade-in');
   },
-  // triggered once lost/removed
-  ondisconnected() {
+  disconnectedCallback() {
     console.log('goodbye');
   },
-  // triggered when any attribute changes
-  onattributechanged(event) {
-    const {attributeName, oldValue, newValue} = event;
+
+  // attributes notifications
+  observedAttributes: ['only', 'these', 'attrs'],
+  attributeChangedCallback(attributeName, oldValue, newValue) {
     console.log(attributeName, oldValue, newValue);
-  },
-  // optionally you can specify attributes to observe
-  // by default, or with an empty list, all attributes are notified
-  attributeFilter: ['only', 'these', 'attrs']
+  }
 });
 
-regularElements.define(
-  '#complex > selector [data-available]',
-  {...}
-);
 
-// direct one-off element enhancement via
-regularElements.define(
-  document.querySelector('#element'),
-  {...}
-);
+define('#any > sel-ector[you=like]', {
+  // ...
+});
 ```
 
-The _API_ is similar to the `customElements` one, included `.get(selector)` and `.whenDefined(selector)`.
+The module exports the same _API_ found in [CustomElementRegistry](https://developer.mozilla.org/en-US/docs/Web/API/CustomElementRegistry): `define(selector, definition)`, `get(selector)`, `upgrade(node)`, and `whenDefined(selector)`.
 
-## What About Components ?
 
-This module brings literally only those 3 primitives to the table, but fear not, [wickedElements](https://github.com/WebReflection/wicked-elements) are a super thin wrapper that will bring 100% prototypal based components on top of these hooks, providing a private context per each component / node pair.
-
-Trust me, the name wasn't chosen by accident, components made this way are absolutely wicked!
-
-### Compatibility
-
-[Even IE 9](https://webreflection.github.io/regular-elements/test/), but in order to also use `whenDefined` method, a `Promise` polyfill needs to be available on the global scope.
-
-Following an example of how you could bring a `Promise` and `WeakMap` polyfill only in legacy browsers (IE9 and IE10), through a single script on top of any page that needs it.
-```html
-<script>this.Promise||document.write('<script src="https://unpkg.com/es6-promise@4.2.5/dist/es6-promise.auto.min.js"><\x2fscript>')</script>
-<script>this.WeakMap||document.write('<script src="https://unpkg.com/@ungap/weakmap@0.1.4/min.js"><\x2fscript>')</script>
-```
 
 ## Best Practices
 
@@ -69,12 +58,12 @@ A single node can indeed behave in various way, as long as it matches one or mor
 
 ```js
 regularElements.define('.clicker', {
-  onconnected() {
+  connectedCallback() {
     this.addEventListener('click', theClicker);
   }
 });
 regularElements.define('.hi-five', {
-  onconnected() {
+  connectedCallback() {
     this.textContent += ' 🖐 ';
   }
 });

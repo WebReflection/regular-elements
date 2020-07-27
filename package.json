@@ -1,44 +1,14 @@
 {
   "name": "regular-elements",
-  "version": "0.5.1",
+  "version": "0.0.0",
   "description": "Custom Elements made available for any node, and through CSS selectors",
-  "main": "cjs/index.js",
-  "module": "esm/index.js",
-  "unpkg": "min.js",
+  "main": "./cjs/index.js",
   "scripts": {
-    "build": "ascjs esm cjs && rollup --config rollup.config.js && npm run cleanup && npm run min && npm run size",
-    "min": "echo \"/*! (c) Andrea Giammarchi (ISC) */$(uglifyjs index.js --support-ie8 -c -m)\" > min.js",
-    "size": "cat min.js | gzip -9 | wc -c && cat min.js | brotli | wc -c",
-    "cleanup": "cat index.js|sed 's/(exports)/(document)/'|sed 's/return exports;/return regularElements;/'|sed -e 's/exports.*;//g'|sed 's/({})/(document)/'>index.clean&&mv index.clean index.js"
-  },
-  "author": "Andrea Giammarchi",
-  "license": "ISC",
-  "greenkeeper": {
-    "ignore": [
-      "rollup",
-      "rollup-plugin-node-resolve"
-    ]
-  },
-  "devDependencies": {
-    "ascjs": "^3.0.1",
-    "rollup": "^1.10.1",
-    "rollup-plugin-node-resolve": "^4.2.3",
-    "uglify-js": "^3.5.9"
-  },
-  "directories": {
-    "test": "test"
-  },
-  "dependencies": {
-    "@ungap/assign": "^0.1.0",
-    "@ungap/custom-event": "^0.2.0",
-    "@ungap/element-matches": "^0.1.0",
-    "@ungap/weakset": "^0.1.5",
-    "attributechanged": "^0.2.0",
-    "disconnected": "^0.2.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/WebReflection/regular-elements.git"
+    "build": "npm run cjs && npm run rollup:es && npm run rollup:babel && npm run min",
+    "cjs": "ascjs esm cjs",
+    "rollup:es": "rollup --config rollup/es.config.js && sed -i.bck 's/^var /self./' es.js && rm -rf es.js.bck",
+    "rollup:babel": "rollup --config rollup/babel.config.js && sed -i.bck 's/^var /self./' index.js && rm -rf index.js.bck",
+    "min": "terser index.js --comments='/^!/' -c -m -o min.js"
   },
   "keywords": [
     "dom",
@@ -48,6 +18,35 @@
     "define",
     "behavior"
   ],
+  "author": "Andrea Giammarchi",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
+    "@rollup/plugin-babel": "^5.1.0",
+    "@rollup/plugin-node-resolve": "^8.4.0",
+    "@ungap/degap": "^0.2.0",
+    "ascjs": "^4.0.1",
+    "rollup": "^2.23.0",
+    "rollup-plugin-includepaths": "^0.2.3",
+    "rollup-plugin-terser": "^6.1.0",
+    "terser": "^4.8.0"
+  },
+  "module": "./esm/index.js",
+  "type": "module",
+  "exports": {
+    "import": "./esm/index.js",
+    "default": "./cjs/index.js"
+  },
+  "unpkg": "min.js",
+  "dependencies": {
+    "as-custom-element": "^0.2.0",
+    "shared-document-observer": "^0.1.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WebReflection/regular-elements.git"
+  },
   "bugs": {
     "url": "https://github.com/WebReflection/regular-elements/issues"
   },
