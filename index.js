@@ -119,6 +119,24 @@ self.regularElements = (function (exports) {
     query.forEach.call(nodes, upgrade);
   };
 
+  var Lie = typeof Promise === 'function' ? Promise : function (fn) {
+    var queue = [],
+        resolved = false;
+    fn(function () {
+      resolved = true;
+      queue.splice(0).forEach(then);
+    });
+    return {
+      then: then,
+      "catch": function _catch() {
+        return this;
+      }
+    };
+
+    function then(fn) {
+      return resolved ? setTimeout(fn) : queue.push(fn), this;
+    }
+  };
   set.add(function (records) {
     records.forEach(upgradeNodes);
   });
@@ -156,24 +174,6 @@ self.regularElements = (function (exports) {
 
     return defined[selector].$;
   };
-  var Lie = typeof Promise === 'function' ? Promise : function (fn) {
-    var queue = [],
-        resolved = false;
-    fn(function () {
-      resolved = true;
-      queue.splice(0).forEach(then);
-    });
-    return {
-      then: then,
-      "catch": function _catch() {
-        return this;
-      }
-    };
-
-    function then(fn) {
-      return resolved ? setTimeout(fn) : queue.push(fn), this;
-    }
-  };
 
   function setup(selector, i) {
     var querySelectorAll = this.querySelectorAll;
@@ -190,7 +190,6 @@ self.regularElements = (function (exports) {
     }
   }
 
-  exports.Lie = Lie;
   exports.define = define;
   exports.get = get;
   exports.upgrade = upgrade;

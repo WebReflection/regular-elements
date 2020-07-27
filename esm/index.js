@@ -13,6 +13,18 @@ const setupList = nodes => {
   query.forEach.call(nodes, upgrade);
 };
 
+const Lie = typeof Promise === 'function' ? Promise : function (fn) {
+  let queue = [], resolved = false;
+  fn(() => {
+    resolved = true;
+    queue.splice(0).forEach(then);
+  });
+  return {then, catch() { return this; }};
+  function then(fn) {
+    return (resolved ? setTimeout(fn) : queue.push(fn)), this;
+  }
+};
+
 sdo.add(records => {
   records.forEach(upgradeNodes);
 });
@@ -42,18 +54,6 @@ export const whenDefined = selector => {
     defined[selector] = {_, $};
   }
   return defined[selector].$;
-};
-
-export const Lie = typeof Promise === 'function' ? Promise : function (fn) {
-  let queue = [], resolved = false;
-  fn(() => {
-    resolved = true;
-    queue.splice(0).forEach(then);
-  });
-  return {then, catch() { return this; }};
-  function then(fn) {
-    return (resolved ? setTimeout(fn) : queue.push(fn)), this;
-  }
 };
 
 function setup(selector, i) {
