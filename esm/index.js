@@ -1,5 +1,4 @@
 import asCustomElement from 'as-custom-element';
-import sdo from 'shared-document-observer';
 import utils from '@webreflection/elements-utils';
 
 const config = [];
@@ -9,7 +8,7 @@ const defined = {};
 const {
   get, upgrade, whenDefined,
   $: setupList
-} = utils(sdo, query, config, defined, function (selector, i) {
+} = utils(query, config, defined, function (selector, i) {
   const {querySelectorAll} = this;
   if (querySelectorAll) {
     if ((

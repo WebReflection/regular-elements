@@ -1,6 +1,5 @@
 'use strict';
 const asCustomElement = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('as-custom-element'));
-const sdo = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('shared-document-observer'));
 const utils = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@webreflection/elements-utils'));
 
 const config = [];
@@ -10,7 +9,7 @@ const defined = {};
 const {
   get, upgrade, whenDefined,
   $: setupList
-} = utils(sdo, query, config, defined, function (selector, i) {
+} = utils(query, config, defined, function (selector, i) {
   const {querySelectorAll} = this;
   if (querySelectorAll) {
     if ((

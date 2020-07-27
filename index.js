@@ -108,32 +108,21 @@ self.regularElements = (function (exports) {
 
   var Lie = typeof Promise === 'function' ? Promise : function (fn) {
     var queue = [],
-        resolved = false;
+        resolved = 0;
     fn(function () {
-      resolved = true;
+      resolved = 1;
       queue.splice(0).forEach(then);
     });
     return {
-      then: then,
-      "catch": function _catch() {
-        return this;
-      }
+      then: then
     };
 
     function then(fn) {
       return resolved ? setTimeout(fn) : queue.push(fn), this;
     }
   };
-  var utils = (function (sdo, query, config, defined, setup) {
-    var setupList = function setupList(nodes) {
-      query.forEach.call(nodes, upgrade);
-    };
-
-    var upgradeNodes = function upgradeNodes(_ref) {
-      var addedNodes = _ref.addedNodes;
-      setupList(addedNodes);
-    };
-
+  var utils = (function (query, config, defined, setup) {
+    // exports
     var get = function get(selector) {
       var i = query.indexOf(selector);
       return i < 0 ? void 0 : config[i].o;
@@ -157,10 +146,19 @@ self.regularElements = (function (exports) {
       }
 
       return defined[selector].$;
+    }; // util
+
+
+    var setupList = function setupList(nodes) {
+      for (var i = 0, length = nodes.length; i < length; i++) {
+        upgrade(nodes[i]);
+      }
     };
 
-    sdo.add(function (records) {
-      records.forEach(upgradeNodes);
+    set.add(function (records) {
+      for (var i = 0, length = records.length; i < length; i++) {
+        setupList(records[i].addedNodes);
+      }
     });
     return {
       get: get,
@@ -174,7 +172,7 @@ self.regularElements = (function (exports) {
   var query = [];
   var defined = {};
 
-  var _utils = utils(set, query, config, defined, function (selector, i) {
+  var _utils = utils(query, config, defined, function (selector, i) {
     var querySelectorAll = this.querySelectorAll;
 
     if (querySelectorAll) {
