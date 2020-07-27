@@ -106,19 +106,6 @@ self.regularElements = (function (exports) {
     back.call(this);
   }
 
-  var config = [];
-  var query = [];
-  var defined = {};
-
-  var upgradeNodes = function upgradeNodes(_ref) {
-    var addedNodes = _ref.addedNodes;
-    setupList(addedNodes);
-  };
-
-  var setupList = function setupList(nodes) {
-    query.forEach.call(nodes, upgrade);
-  };
-
   var Lie = typeof Promise === 'function' ? Promise : function (fn) {
     var queue = [],
         resolved = false;
@@ -137,45 +124,57 @@ self.regularElements = (function (exports) {
       return resolved ? setTimeout(fn) : queue.push(fn), this;
     }
   };
-  set.add(function (records) {
-    records.forEach(upgradeNodes);
-  });
-  var define = function define(selector, options) {
-    if (get(selector)) throw new Error('duplicated: ' + selector);
-    query.push(selector);
-    config.push({
-      o: options,
-      m: new WeakMap()
+  var utils = (function (sdo, query, config, defined, setup) {
+    var setupList = function setupList(nodes) {
+      query.forEach.call(nodes, upgrade);
+    };
+
+    var upgradeNodes = function upgradeNodes(_ref) {
+      var addedNodes = _ref.addedNodes;
+      setupList(addedNodes);
+    };
+
+    var get = function get(selector) {
+      var i = query.indexOf(selector);
+      return i < 0 ? void 0 : config[i].o;
+    };
+
+    var upgrade = function upgrade(node) {
+      query.forEach(setup, node);
+    };
+
+    var whenDefined = function whenDefined(selector) {
+      if (!(selector in defined)) {
+        var _,
+            $ = new Lie(function ($) {
+          _ = $;
+        });
+
+        defined[selector] = {
+          _: _,
+          $: $
+        };
+      }
+
+      return defined[selector].$;
+    };
+
+    sdo.add(function (records) {
+      records.forEach(upgradeNodes);
     });
-    setupList(document.querySelectorAll(selector));
-    whenDefined(selector);
+    return {
+      get: get,
+      upgrade: upgrade,
+      whenDefined: whenDefined,
+      $: setupList
+    };
+  });
 
-    defined[selector]._();
-  };
-  var get = function get(selector) {
-    var i = query.indexOf(selector);
-    return i < 0 ? void 0 : config[i].o;
-  };
-  var upgrade = function upgrade(node) {
-    query.forEach(setup, node);
-  };
-  var whenDefined = function whenDefined(selector) {
-    if (!(selector in defined)) {
-      var _,
-          $ = new Lie(function ($) {
-        _ = $;
-      });
+  var config = [];
+  var query = [];
+  var defined = {};
 
-      defined[selector] = {
-        _: _,
-        $: $
-      };
-    }
-
-    return defined[selector].$;
-  };
-
-  function setup(selector, i) {
+  var _utils = utils(set, query, config, defined, function (selector, i) {
     var querySelectorAll = this.querySelectorAll;
 
     if (querySelectorAll) {
@@ -188,7 +187,24 @@ self.regularElements = (function (exports) {
 
       setupList(querySelectorAll.call(this, query));
     }
-  }
+  }),
+      get = _utils.get,
+      upgrade = _utils.upgrade,
+      whenDefined = _utils.whenDefined,
+      setupList = _utils.$;
+
+  var define = function define(selector, options) {
+    if (get(selector)) throw new Error('duplicated: ' + selector);
+    query.push(selector);
+    config.push({
+      o: options,
+      m: new WeakMap()
+    });
+    setupList(document.querySelectorAll(selector));
+    whenDefined(selector);
+
+    defined[selector]._();
+  };
 
   exports.define = define;
   exports.get = get;
