@@ -1,156 +1,79 @@
 'use strict';
-/**
- * ISC License
- *
- * Copyright (c) 2018, Andrea Giammarchi, @WebReflection
- *
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
- * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+const asCustomElement = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('as-custom-element'));
+const sdo = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('shared-document-observer'));
 
-const CustomEvent = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@ungap/custom-event'));
-const WeakSet = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@ungap/weakset'));
+const config = [];
+const query = [];
+const defined = {};
 
-const assign = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@ungap/assign'));
-const matches = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@ungap/element-matches'));
-
-const attributechanged = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('attributechanged'));
-const disconnected = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('disconnected'));
-
-var poly = {Event: CustomEvent, WeakSet: WeakSet};
-var contains = document.contains || function (el) {
-  while (el && el !== this) el = el.parentNode;
-  return this === el;
+const upgradeNodes = ({addedNodes}) => {
+  setupList(addedNodes);
 };
 
-var bootstrap = true;
-
-var query = [];
-var config = [];
-var waiting = {};
-var known = {};
-
-var regularElements = {
-  define: function (selector, options) {
-    if (bootstrap) {
-      bootstrap = false;
-      init(document);
-    }
-    var type = typeof selector;
-    if (type === 'string') {
-      if (get(selector))
-        throw new Error('duplicated: ' + selector);
-      query.push(selector);
-      config.push(options || {});
-      ready();
-      if (selector in waiting) {
-        var cfg = get(selector);
-        if (cfg) {
-          waiting[selector](cfg);
-          delete waiting[selector];
-        }
-      }
-    } else {
-      if (type !== "object" || selector.nodeType !== 1)
-        throw new Error('undefinable: ' + selector);
-      setupListeners(selector, options || {});
-    }
-  },
-  get: get,
-  whenDefined: function (selector) {
-    return Promise.resolve(
-      get(selector) ||
-      new Promise(function ($) {
-        waiting[selector] = $;
-      })
-    );
-  }
+const setupList = nodes => {
+  query.forEach.call(nodes, upgrade);
 };
 
-// passing along regularElements as poly for Event and WeakSet
-var lifecycle = disconnected(poly);
-var observe = {
-  attributechanged: attributechanged(poly),
-  connected: lifecycle,
-  disconnected: lifecycle
+sdo.add(records => {
+  records.forEach(upgradeNodes);
+});
+
+const define = (selector, options) => {
+  if (get(selector))
+    throw new Error('duplicated: ' + selector);
+  query.push(selector);
+  config.push({o: options, m: new WeakMap});
+  setupList(document.querySelectorAll(selector));
+  whenDefined(selector);
+  defined[selector]._();
 };
+exports.define = define;
 
-Object.defineProperty(exports, '__esModule', {value: true}).default = regularElements;
+const get = selector => {
+  const i = query.indexOf(selector);
+  return i < 0 ? void 0 : config[i].o;
+};
+exports.get = get;
 
-function changes(records) {
-  for (var i = 0, length = records.length; i < length; i++)
-    setupList(records[i].addedNodes, false);
-}
+const upgrade = node => {
+  query.forEach(setup, node);
+};
+exports.upgrade = upgrade;
 
-function get(selector) {
-  var i = query.indexOf(selector);
-  return i < 0 ? null : assign({}, config[i]);
-}
-
-function init(doc) {
-  try {
-    (new MutationObserver(changes))
-      .observe(doc, {subtree: true, childList: true});
+const whenDefined = selector => {
+  if (!(selector in defined)) {
+    let _, $ = new Lie($ => { _ = $; });
+    defined[selector] = {_, $};
   }
-  catch(o_O) {
-    doc.addEventListener(
-      'DOMNodeInserted',
-      function (e) {
-        changes([{addedNodes: [e.target]}]);
-      },
-      false
-    );
+  return defined[selector].$;
+};
+exports.whenDefined = whenDefined;
+
+const Lie = typeof Promise === 'function' ? Promise : function (fn) {
+  let queue = [], resolved = false;
+  fn(() => {
+    resolved = true;
+    queue.splice(0).forEach(then);
+  });
+  return {then, catch() { return this; }};
+  function then(fn) {
+    return (resolved ? setTimeout(fn) : queue.push(fn)), this;
   }
-  if (doc.readyState !== 'complete')
-    doc.addEventListener('DOMContentLoaded', ready, {once: true});
-}
+};
+exports.Lie = Lie;
 
-function ready() {
-  if (query.length)
-    setupList(document.querySelectorAll(query), true);
-}
-
-function setup(node) {
-  setupList(node.querySelectorAll(query), true);
-  for (var ws, css, i = 0, length = query.length; i < length; i++) {
-    css = query[i];
-    ws = known[css] || (known[css] = new WeakSet);
-    if (!ws.has(node) && matches.call(node, query[i])) {
-      ws.add(node);
-      setupListeners(node, config[i]);
+function setup(selector, i) {
+  const {querySelectorAll} = this;
+  if (querySelectorAll) {
+    if ((
+      this.matches ||
+      this.webkitMatchesSelector ||
+      this.msMatchesSelector
+    ).call(this, selector)) {
+      const {m, o} = config[i];
+      if (!m.has(this))
+        m.set(asCustomElement(this, o), 0);
     }
+    setupList(querySelectorAll.call(this, query));
   }
-}
-
-function setupList(nodes, isElement) {
-  for (var node, i = 0, length = nodes.length; i < length; i++) {
-    node = nodes[i];
-    if (isElement || node.nodeType === 1)
-      setup(node);
-  }
-}
-
-function setupListener(node, options, type, dispatch) {
-  var method = options['on' + type];
-  if (method) {
-    observe[type](node, options.attributeFilter)
-      .addEventListener(type, method, false);
-    if (dispatch && contains.call(document, node))
-      node.dispatchEvent(new CustomEvent(type));
-  }
-}
-
-function setupListeners(node, options) {
-  setupListener(node, options, 'attributechanged', false);
-  setupListener(node, options, 'disconnected', false);
-  setupListener(node, options, 'connected', true);
 }
