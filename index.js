@@ -1,21 +1,7 @@
 self.regularElements = (function (exports) {
   'use strict';
 
-  var set = new Set();
-  var observer = new MutationObserver(function (records) {
-    set.forEach(invoke, records);
-  });
-  observer.observe(document, {
-    subtree: true,
-    childList: true
-  });
-  set.observer = observer;
-
-  function invoke(callback) {
-    callback(this, observer);
-  }
-
-  var asCE = (function (selectors) {
+  var asCE = (function (selectors, root) {
     var wm = new WeakMap();
 
     var attributeChanged = function attributeChanged(records) {
@@ -58,7 +44,7 @@ self.regularElements = (function (exports) {
       }
     };
 
-    var set$1 = function set(target) {
+    var set = function set(target) {
       var sets = {
         a: {},
         c: new Set(),
@@ -69,15 +55,19 @@ self.regularElements = (function (exports) {
     };
 
     var sao = new MutationObserver(attributeChanged);
-    set.add(mainLoop);
+    var sdo = new MutationObserver(mainLoop);
+    sdo.observe(root || document, {
+      childList: true,
+      subtree: true
+    });
     return function (target, _ref) {
       var connectedCallback = _ref.connectedCallback,
           disconnectedCallback = _ref.disconnectedCallback,
           observedAttributes = _ref.observedAttributes,
           attributeChangedCallback = _ref.attributeChangedCallback;
-      mainLoop(set.observer.takeRecords());
+      mainLoop(sdo.takeRecords());
 
-      var _ref2 = wm.get(target) || set$1(target),
+      var _ref2 = wm.get(target) || set(target),
           a = _ref2.a,
           c = _ref2.c,
           d = _ref2.d;
@@ -124,7 +114,7 @@ self.regularElements = (function (exports) {
       return resolved ? setTimeout(fn) : queue.push(fn), this;
     }
   };
-  var utils = (function (query, config, defined, setup) {
+  var utils = (function (root, query, config, defined, setup) {
     // exports
     var get = function get(selector) {
       var i = query.indexOf(selector);
@@ -153,12 +143,8 @@ self.regularElements = (function (exports) {
 
 
     var setupList = function setupList(nodes, parsed, noCheck) {
-      var i = 0,
-          length = nodes.length,
-          node;
-
-      while (i < length) {
-        node = nodes[i++];
+      for (var node, i = 0, length = nodes.length; i < length; i++) {
+        node = nodes[i];
 
         if (!parsed.has(node) && (noCheck || 'querySelectorAll' in node)) {
           parsed.add(node);
@@ -167,24 +153,27 @@ self.regularElements = (function (exports) {
       }
     };
 
-    var upgradeNode = function upgradeNode(node, parsed, noCheck) {
-      var i = 0,
-          length = query.length;
-
-      while (i < length) {
-        if ((node.matches || node.webkitMatchesSelector || node.msMatchesSelector).call(node, query[i])) setup(node, config[i]);
-        i++;
-      }
-
-      if (length) setupList(node.querySelectorAll(query), parsed, noCheck);
+    var upgradeAll = function upgradeAll(node, parsed, noCheck) {
+      if (query.length) setupList(node.querySelectorAll(query), parsed, noCheck);
     };
 
+    var upgradeNode = function upgradeNode(node, parsed, noCheck) {
+      for (var i = 0, length = query.length; i < length; i++) {
+        if ((node.matches || node.webkitMatchesSelector || node.msMatchesSelector).call(node, query[i])) setup(node, config[i]);
+      }
+
+      upgradeAll(node, parsed, noCheck);
+    };
+
+    addEventListener('DOMContentLoaded', upgradeAll.bind(null, root, new Set(), true), {
+      once: 1
+    });
     return {
       get: get,
       upgrade: upgrade,
       whenDefined: whenDefined,
       $: setupList,
-      _: asCE(query)
+      _: asCE(query, root)
     };
   });
 
@@ -192,7 +181,7 @@ self.regularElements = (function (exports) {
   var query = [];
   var defined = {};
 
-  var _utils = utils(query, config, defined, function (element, _ref) {
+  var _utils = utils(document, query, config, defined, function (element, _ref) {
     var m = _ref.m,
         o = _ref.o;
     if (!m.has(element)) m.set(asCustomElement(element, o), 0);

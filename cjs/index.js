@@ -10,7 +10,7 @@ const {
   $: setupList,
   _: asCustomElement
 } = utils(
-  query, config, defined,
+  document, query, config, defined,
   (element, {m, o}) => {
     if (!m.has(element))
       m.set(asCustomElement(element, o), 0);
