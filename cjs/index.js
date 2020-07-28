@@ -1,5 +1,4 @@
 'use strict';
-const asCustomElement = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('as-custom-element'));
 const utils = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@webreflection/elements-utils'));
 
 const config = [];
@@ -8,7 +7,8 @@ const defined = {};
 
 const {
   get, upgrade, whenDefined,
-  $: setupList
+  $: setupList,
+  _: asCustomElement
 } = utils(
   query, config, defined,
   (element, {m, o}) => {

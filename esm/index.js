@@ -1,4 +1,3 @@
-import asCustomElement from 'as-custom-element';
 import utils from '@webreflection/elements-utils';
 
 const config = [];
@@ -7,7 +6,8 @@ const defined = {};
 
 const {
   get, upgrade, whenDefined,
-  $: setupList
+  $: setupList,
+  _: asCustomElement
 } = utils(
   query, config, defined,
   (element, {m, o}) => {
