@@ -7,16 +7,12 @@ const defined = {};
 
 const {
   get, upgrade, whenDefined,
-  _: matches, $: setupList
+  $: setupList
 } = utils(
   query, config, defined,
-  (element, i, parsed) => {
-    if (matches(element, query[i])) {
-      const {m, o} = config[i];
-      if (!m.has(element))
-        m.set(asCustomElement(element, o), 0);
-    }
-    setupList(element.querySelectorAll(query), parsed);
+  (element, {m, o}) => {
+    if (!m.has(element))
+      m.set(asCustomElement(element, o), 0);
   }
 );
 
