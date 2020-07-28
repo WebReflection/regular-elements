@@ -42,7 +42,7 @@ self.regularElements = (function (exports) {
         if (!parsed.has(target) && (noCheck || 'querySelectorAll' in target)) {
           parsed.add(target);
           if (wm.has(target)) wm.get(target)[key].forEach(call, target);
-          invoke(target.querySelectorAll(selectors), key, parsed, true);
+          if (selectors.length) invoke(target.querySelectorAll(selectors), key, parsed, true);
         }
       }
     };
