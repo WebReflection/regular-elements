@@ -164,7 +164,7 @@ self.regularElements = (function (exports) {
 
         if (!parsed.has(node) && 'querySelectorAll' in node) {
           parsed.add(node);
-          upgrade(node);
+          upgradeNode(node, parsed);
         }
       }
     };
