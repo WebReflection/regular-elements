@@ -22,7 +22,7 @@ const define = (selector, options) => {
     throw new Error('duplicated: ' + selector);
   query.push(selector);
   config.push({o: options, m: new WeakMap});
-  setupList(document.querySelectorAll(selector), new Set);
+  setupList(document.querySelectorAll(selector), new Set, true);
   whenDefined(selector);
   defined[selector]._();
 };

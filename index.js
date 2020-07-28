@@ -214,7 +214,7 @@ self.regularElements = (function (exports) {
       o: options,
       m: new WeakMap()
     });
-    setupList(document.querySelectorAll(selector), new Set());
+    setupList(document.querySelectorAll(selector), new Set(), true);
     whenDefined(selector);
 
     defined[selector]._();
