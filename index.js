@@ -158,21 +158,21 @@ self.regularElements = (function (exports) {
       return (element.matches || element.webkitMatchesSelector || element.msMatchesSelector).call(element, selector);
     };
 
-    var setupList = function setupList(nodes, nested) {
+    var setupList = function setupList(nodes, parsed) {
       for (var i = 0, length = nodes.length; i < length; i++) {
-        if (!nested || 'querySelectorAll' in nodes[i]) upgradeNode(nodes[i], nested);
+        if (!parsed.has(nodes[i]) && 'querySelectorAll' in nodes[i]) upgradeNode(nodes[i], parsed);
       }
     };
 
-    var upgradeNode = function upgradeNode(node, nested) {
+    var upgradeNode = function upgradeNode(node, parsed) {
       for (var i = 0, length = query.length; i < length; i++) {
-        setup(node, i, nested);
+        setup(node, i, parsed);
       }
     };
 
     set.add(function (records) {
-      for (var i = 0, length = records.length; i < length; i++) {
-        setupList(records[i].addedNodes, true);
+      for (var parsed = new Set(), i = 0, length = records.length; i < length; i++) {
+        setupList(records[i].addedNodes, parsed);
       }
     });
     return {
@@ -188,23 +188,21 @@ self.regularElements = (function (exports) {
   var query = [];
   var defined = {};
 
-  var _utils = utils(query, config, defined, function (element, i, nested) {
-    if (nested) {
-      if (matches(element, query[i])) init(element, config[i]);
-      setupList(element.querySelectorAll(query), !nested);
-    } else init(element, config[i]);
+  var _utils = utils(query, config, defined, function (element, i, parsed) {
+    if (matches(element, query[i])) {
+      var _config$i = config[i],
+          m = _config$i.m,
+          o = _config$i.o;
+      if (!m.has(element)) m.set(asCustomElement(element, o), 0);
+    }
+
+    setupList(element.querySelectorAll(query), parsed);
   }),
       get = _utils.get,
       upgrade = _utils.upgrade,
       whenDefined = _utils.whenDefined,
       matches = _utils._,
       setupList = _utils.$;
-
-  var init = function init(element, _ref) {
-    var m = _ref.m,
-        o = _ref.o;
-    if (!m.has(element)) m.set(asCustomElement(element, o), 0);
-  };
 
   var define = function define(selector, options) {
     if (get(selector)) throw new Error('duplicated: ' + selector);
@@ -213,7 +211,7 @@ self.regularElements = (function (exports) {
       o: options,
       m: new WeakMap()
     });
-    setupList(document.querySelectorAll(selector));
+    setupList(document.querySelectorAll(selector), new Set());
     whenDefined(selector);
 
     defined[selector]._();

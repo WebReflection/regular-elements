@@ -11,28 +11,22 @@ const {
   _: matches, $: setupList
 } = utils(
   query, config, defined,
-  (element, i, nested) => {
-    if (nested) {
-      if (matches(element, query[i]))
-        init(element, config[i]);
-      setupList(element.querySelectorAll(query), !nested);
+  (element, i, parsed) => {
+    if (matches(element, query[i])) {
+      const {m, o} = config[i];
+      if (!m.has(element))
+        m.set(asCustomElement(element, o), 0);
     }
-    else
-      init(element, config[i]);
+    setupList(element.querySelectorAll(query), parsed);
   }
 );
-
-const init = (element, {m, o}) => {
-  if (!m.has(element))
-    m.set(asCustomElement(element, o), 0);
-};
 
 const define = (selector, options) => {
   if (get(selector))
     throw new Error('duplicated: ' + selector);
   query.push(selector);
   config.push({o: options, m: new WeakMap});
-  setupList(document.querySelectorAll(selector));
+  setupList(document.querySelectorAll(selector), new Set);
   whenDefined(selector);
   defined[selector]._();
 };
