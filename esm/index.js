@@ -8,19 +8,23 @@ const defined = {};
 const {
   get, upgrade, whenDefined,
   $: setupList
-} = utils(query, config, defined, function (selector, i) {
-  const {querySelectorAll} = this;
-  if (querySelectorAll) {
+} = utils(query, config, defined, function (element, i, nested) {
+  if (nested) {
     if ((
-      this.matches ||
-      this.webkitMatchesSelector ||
-      this.msMatchesSelector
-    ).call(this, selector)) {
+      element.matches ||
+      element.webkitMatchesSelector ||
+      element.msMatchesSelector
+    ).call(element, query[i])) {
       const {m, o} = config[i];
-      if (!m.has(this))
-        m.set(asCustomElement(this, o), 0);
+      if (!m.has(element))
+        m.set(asCustomElement(element, o), 0);
     }
-    setupList(querySelectorAll.call(this, query));
+    setupList(element.querySelectorAll(query), !nested);
+  }
+  else {
+    const {m, o} = config[i];
+    if (!m.has(element))
+      m.set(asCustomElement(element, o), 0);
   }
 });
 
