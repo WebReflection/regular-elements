@@ -183,22 +183,17 @@ self.regularElements = (function (exports) {
   var query = [];
   var defined = {};
 
+  var add = function add(element, _ref) {
+    var m = _ref.m,
+        o = _ref.o;
+    if (!m.has(element)) m.set(asCustomElement(element, o), 0);
+  };
+
   var _utils = utils(query, config, defined, function (element, i, nested) {
     if (nested) {
-      if ((element.matches || element.webkitMatchesSelector || element.msMatchesSelector).call(element, query[i])) {
-        var _config$i = config[i],
-            m = _config$i.m,
-            o = _config$i.o;
-        if (!m.has(element)) m.set(asCustomElement(element, o), 0);
-      }
-
+      if ((element.matches || element.webkitMatchesSelector || element.msMatchesSelector).call(element, query[i])) add(element, config[i]);
       setupList(element.querySelectorAll(query), !nested);
-    } else {
-      var _config$i2 = config[i],
-          _m = _config$i2.m,
-          _o = _config$i2.o;
-      if (!_m.has(element)) _m.set(asCustomElement(element, _o), 0);
-    }
+    } else add(element, config[i]);
   }),
       get = _utils.get,
       upgrade = _utils.upgrade,

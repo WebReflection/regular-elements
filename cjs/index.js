@@ -6,28 +6,30 @@ const config = [];
 const query = [];
 const defined = {};
 
+const add = (element, {m, o}) => {
+  if (!m.has(element))
+    m.set(asCustomElement(element, o), 0);
+};
+
 const {
   get, upgrade, whenDefined,
   $: setupList
-} = utils(query, config, defined, function (element, i, nested) {
-  if (nested) {
-    if ((
-      element.matches ||
-      element.webkitMatchesSelector ||
-      element.msMatchesSelector
-    ).call(element, query[i])) {
-      const {m, o} = config[i];
-      if (!m.has(element))
-        m.set(asCustomElement(element, o), 0);
+} = utils(
+  query, config, defined,
+  (element, i, nested) => {
+    if (nested) {
+      if ((
+        element.matches ||
+        element.webkitMatchesSelector ||
+        element.msMatchesSelector
+      ).call(element, query[i]))
+        add(element, config[i]);
+      setupList(element.querySelectorAll(query), !nested);
     }
-    setupList(element.querySelectorAll(query), !nested);
+    else
+      add(element, config[i]);
   }
-  else {
-    const {m, o} = config[i];
-    if (!m.has(element))
-      m.set(asCustomElement(element, o), 0);
-  }
-});
+);
 
 const define = (selector, options) => {
   if (get(selector))
