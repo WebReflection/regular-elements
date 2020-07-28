@@ -155,20 +155,30 @@ self.regularElements = (function (exports) {
 
 
     var setupList = function setupList(nodes, parsed) {
-      for (var i = 0, length = nodes.length; i < length; i++) {
-        if (!parsed.has(nodes[i]) && 'querySelectorAll' in nodes[i]) {
-          parsed.add(nodes[i]);
-          upgrade(nodes[i]);
+      var i = 0,
+          length = nodes.length,
+          node;
+
+      while (i < length) {
+        node = nodes[i++];
+
+        if (!parsed.has(node) && 'querySelectorAll' in node) {
+          parsed.add(node);
+          upgrade(node);
         }
       }
     };
 
     var upgradeNode = function upgradeNode(node, parsed) {
-      for (var i = 0, length = query.length; i < length; i++) {
+      var i = 0,
+          length = query.length;
+
+      while (i < length) {
         if ((node.matches || node.webkitMatchesSelector || node.msMatchesSelector).call(node, query[i])) setup(node, config[i]);
+        i++;
       }
 
-      setupList(node.querySelectorAll(query), parsed);
+      if (length) setupList(node.querySelectorAll(query), parsed);
     };
 
     set.add(function (records) {
