@@ -154,6 +154,10 @@ self.regularElements = (function (exports) {
     }; // util
 
 
+    var matches = function matches(element, selector) {
+      return (element.matches || element.webkitMatchesSelector || element.msMatchesSelector).call(element, selector);
+    };
+
     var setupList = function setupList(nodes, nested) {
       for (var i = 0, length = nodes.length; i < length; i++) {
         if (!nested || 'querySelectorAll' in nodes[i]) upgradeNode(nodes[i], nested);
@@ -175,6 +179,7 @@ self.regularElements = (function (exports) {
       get: get,
       upgrade: upgrade,
       whenDefined: whenDefined,
+      _: matches,
       $: setupList
     };
   });
@@ -183,22 +188,23 @@ self.regularElements = (function (exports) {
   var query = [];
   var defined = {};
 
-  var add = function add(element, _ref) {
-    var m = _ref.m,
-        o = _ref.o;
-    if (!m.has(element)) m.set(asCustomElement(element, o), 0);
-  };
-
   var _utils = utils(query, config, defined, function (element, i, nested) {
     if (nested) {
-      if ((element.matches || element.webkitMatchesSelector || element.msMatchesSelector).call(element, query[i])) add(element, config[i]);
+      if (matches(element, query[i])) init(element, config[i]);
       setupList(element.querySelectorAll(query), !nested);
-    } else add(element, config[i]);
+    } else init(element, config[i]);
   }),
       get = _utils.get,
       upgrade = _utils.upgrade,
       whenDefined = _utils.whenDefined,
+      matches = _utils._,
       setupList = _utils.$;
+
+  var init = function init(element, _ref) {
+    var m = _ref.m,
+        o = _ref.o;
+    if (!m.has(element)) m.set(asCustomElement(element, o), 0);
+  };
 
   var define = function define(selector, options) {
     if (get(selector)) throw new Error('duplicated: ' + selector);
