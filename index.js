@@ -3,21 +3,16 @@ self.regularElements = (function (exports) {
 
   var asCustomElement = (function (root, upgrade) {
     var wm = new WeakMap();
+    var ao = new WeakMap();
 
-    var attributeChanged = function attributeChanged(records) {
-      var _loop = function _loop(i, length) {
+    var attributeChanged = function attributeChanged(records, mo) {
+      for (var i = 0, length = records.length; i < length; i++) {
         var _records$i = records[i],
             target = _records$i.target,
             attributeName = _records$i.attributeName,
             oldValue = _records$i.oldValue;
         var newValue = target.getAttribute(attributeName);
-        wm.get(target).a[attributeName].forEach(function (attributeChangedCallback) {
-          attributeChangedCallback.call(target, attributeName, oldValue, newValue);
-        });
-      };
-
-      for (var i = 0, length = records.length; i < length; i++) {
-        _loop(i);
+        ao.get(mo).call(target, attributeName, oldValue, newValue);
       }
     };
 
@@ -39,14 +34,12 @@ self.regularElements = (function (exports) {
             addedNodes = _records$i2.addedNodes,
             removedNodes = _records$i2.removedNodes;
         invoke(addedNodes, 'c', new Set(), false);
-        attributeChanged(sao.takeRecords());
         invoke(removedNodes, 'd', new Set(), false);
       }
     };
 
     var set = function set(target) {
       var sets = {
-        a: {},
         c: new Set(),
         d: new Set()
       };
@@ -54,7 +47,6 @@ self.regularElements = (function (exports) {
       return sets;
     };
 
-    var sao = new MutationObserver(attributeChanged);
     var sdo = new MutationObserver(mainLoop);
     sdo.observe(root, {
       childList: true,
@@ -68,20 +60,20 @@ self.regularElements = (function (exports) {
       mainLoop(sdo.takeRecords());
 
       var _ref2 = wm.get(target) || set(target),
-          a = _ref2.a,
           c = _ref2.c,
           d = _ref2.d;
 
       if (observedAttributes) {
-        sao.observe(target, {
+        var mo = new MutationObserver(attributeChanged);
+        mo.observe(target, {
           attributes: true,
           attributeOldValue: true,
-          attributeFilter: observedAttributes
+          attributeFilter: observedAttributes.map(function (attributeName) {
+            if (target.hasAttribute(attributeName)) attributeChangedCallback.call(target, attributeName, null, target.getAttribute(attributeName));
+            return attributeName;
+          })
         });
-        observedAttributes.forEach(function (attributeName) {
-          (a[attributeName] || (a[attributeName] = new Set())).add(attributeChangedCallback);
-          if (target.hasAttribute(attributeName)) attributeChangedCallback.call(target, attributeName, null, target.getAttribute(attributeName));
-        });
+        ao.set(mo, attributeChangedCallback);
       }
 
       if (disconnectedCallback) d.add(disconnectedCallback);
