@@ -41,7 +41,7 @@
   },
   "unpkg": "min.js",
   "dependencies": {
-    "@webreflection/elements-utils": "^1.0.4"
+    "@webreflection/elements-utils": "^1.0.8"
   },
   "repository": {
     "type": "git",
