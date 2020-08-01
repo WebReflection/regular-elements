@@ -22,7 +22,7 @@
   "author": "Andrea Giammarchi",
   "license": "ISC",
   "devDependencies": {
-    "@babel/core": "^7.10.5",
+    "@babel/core": "^7.11.0",
     "@babel/preset-env": "^7.10.4",
     "@rollup/plugin-babel": "^5.1.0",
     "@rollup/plugin-node-resolve": "^8.4.0",
@@ -41,7 +41,8 @@
   },
   "unpkg": "min.js",
   "dependencies": {
-    "@webreflection/elements-utils": "^1.0.13"
+    "@webreflection/lie": "^0.1.0",
+    "qsa-observer": "^0.1.1"
   },
   "repository": {
     "type": "git",

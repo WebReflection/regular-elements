@@ -1,103 +1,6 @@
 self.regularElements = (function (exports) {
   'use strict';
 
-  var asCustomElement = (function (root, upgrade, query) {
-    var wm = new WeakMap();
-    var ao = new WeakMap();
-    var filter = [].filter;
-
-    var attributeChanged = function attributeChanged(records, mo) {
-      for (var i = 0, length = records.length; i < length; i++) {
-        var _records$i = records[i],
-            target = _records$i.target,
-            attributeName = _records$i.attributeName,
-            oldValue = _records$i.oldValue;
-        var newValue = target.getAttribute(attributeName);
-        ao.get(mo).call(target, attributeName, oldValue, newValue);
-      }
-    };
-
-    var elements = function elements(target) {
-      return 'querySelectorAll' in target;
-    };
-
-    var mainLoop = function mainLoop(records) {
-      if (query.length) {
-        for (var i = 0, length = records.length; i < length; i++) {
-          var _records$i2 = records[i],
-              addedNodes = _records$i2.addedNodes,
-              removedNodes = _records$i2.removedNodes;
-          parse(filter.call(addedNodes, elements), 'c', new Set());
-          parse(filter.call(removedNodes, elements), 'd', new Set());
-        }
-      }
-    };
-
-    var parse = function parse(nodes, key, parsed) {
-      for (var i = 0, length = nodes.length; i < length; i++) {
-        var target = nodes[i];
-
-        if (!parsed.has(target)) {
-          parsed.add(target);
-          if (wm.has(target)) wm.get(target)[key].forEach(call, target);else if (key === 'c') upgrade(target);
-          parse(target.querySelectorAll(query), key, parsed);
-        }
-      }
-    };
-
-    var set = function set(target) {
-      var sets = {
-        c: new Set(),
-        d: new Set()
-      };
-      wm.set(target, sets);
-      return sets;
-    };
-
-    var sdo = new MutationObserver(mainLoop);
-    sdo.observe(root, {
-      childList: true,
-      subtree: true
-    });
-    return function (target, _ref) {
-      var connectedCallback = _ref.connectedCallback,
-          disconnectedCallback = _ref.disconnectedCallback,
-          observedAttributes = _ref.observedAttributes,
-          attributeChangedCallback = _ref.attributeChangedCallback;
-      mainLoop(sdo.takeRecords());
-
-      var _ref2 = wm.get(target) || set(target),
-          c = _ref2.c,
-          d = _ref2.d;
-
-      if (observedAttributes) {
-        var mo = new MutationObserver(attributeChanged);
-        mo.observe(target, {
-          attributes: true,
-          attributeOldValue: true,
-          attributeFilter: observedAttributes.map(function (attributeName) {
-            if (target.hasAttribute(attributeName)) attributeChangedCallback.call(target, attributeName, null, target.getAttribute(attributeName));
-            return attributeName;
-          })
-        });
-        ao.set(mo, attributeChangedCallback);
-      }
-
-      if (disconnectedCallback) d.add(disconnectedCallback);
-
-      if (connectedCallback) {
-        c.add(connectedCallback);
-        if (!(target.ownerDocument.compareDocumentPosition(target) & target.DOCUMENT_POSITION_DISCONNECTED)) connectedCallback.call(target);
-      }
-
-      return target;
-    };
-  });
-
-  function call(back) {
-    back.call(this);
-  }
-
   var Lie = typeof Promise === 'function' ? Promise : function (fn) {
     var queue = [],
         resolved = 0;
@@ -113,90 +16,155 @@ self.regularElements = (function (exports) {
       return resolved ? setTimeout(fn) : queue.push(fn), this;
     }
   };
-  var utils = (function (root, query, config, defined, setup) {
-    // exports
-    var get = function get(selector) {
-      var i = query.indexOf(selector);
-      return i < 0 ? void 0 : config[i].o;
-    };
 
-    var upgrade = function upgrade(node) {
-      upgradeNode(node, new Set());
-    };
+  var elements = function elements(element) {
+    return 'querySelectorAll' in element;
+  };
 
-    var whenDefined = function whenDefined(selector) {
-      if (!(selector in defined)) {
-        var _,
-            $ = new Lie(function ($) {
-          _ = $;
-        });
+  var filter = [].filter;
+  var QSAO = (function (options) {
+    var callback = function callback(records) {
+      var query = options.query;
 
-        defined[selector] = {
-          _: _,
-          $: $
-        };
-      }
-
-      return defined[selector].$;
-    }; // util
-
-
-    var setupList = function setupList(nodes, parsed) {
-      for (var i = 0, length = nodes.length; i < length; i++) {
-        if (!parsed.has(nodes[i])) {
-          parsed.add(nodes[i]);
-          upgradeNode(nodes[i], parsed);
+      if (query.length) {
+        for (var i = 0, length = records.length; i < length; i++) {
+          loop(filter.call(records[i].addedNodes, elements), true, query);
+          loop(filter.call(records[i].removedNodes, elements), false, query);
         }
       }
     };
 
-    var upgradeAll = function upgradeAll(node, parsed) {
-      if (query.length) setupList(node.querySelectorAll(query), parsed);
+    var flush = function flush() {
+      callback(observer.takeRecords());
     };
 
-    var upgradeNode = function upgradeNode(node, parsed) {
-      for (var i = 0, length = query.length; i < length; i++) {
-        if ((node.matches || node.webkitMatchesSelector || node.msMatchesSelector).call(node, query[i])) setup(node, config[i]);
+    var loop = function loop(elements, connected, query) {
+      var set = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new Set();
+
+      for (var element, i = 0, length = elements.length; i < length; i++) {
+        if (!set.has(element = elements[i])) {
+          set.add(element);
+
+          for (var m = matches(element), _i = 0, _length = query.length; _i < _length; _i++) {
+            if (m.call(element, query[_i])) options.handle(element, connected, _i);
+          }
+
+          loop(element.querySelectorAll(query), connected, query, set);
+        }
       }
-
-      if (parsed) upgradeAll(node, parsed);
     };
 
+    var matches = function matches(element) {
+      return element.matches || element.webkitMatchesSelector || element.msMatchesSelector;
+    };
+
+    var parse = function parse(elements) {
+      var connected = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+      loop(elements, connected, options.query);
+    };
+
+    var observer = new MutationObserver(callback);
+    var root = options.root || document;
+    var query = options.query;
+    observer.observe(root, {
+      childList: true,
+      subtree: true
+    });
+    if (query.length) parse(root.querySelectorAll(query));
     return {
-      get: get,
-      upgrade: upgrade,
-      whenDefined: whenDefined,
-      $: setupList,
-      _: asCustomElement(root, upgradeNode, query)
+      flush: flush,
+      observer: observer,
+      parse: parse
     };
   });
 
-  var config = [];
+  var attributes = new WeakMap();
   var query = [];
+  var config = [];
   var defined = {};
 
-  var _utils = utils(document, query, config, defined, function (element, _ref) {
-    var m = _ref.m,
-        o = _ref.o;
-    if (!m.has(element)) m.set(asCustomElement$1(element, o), 0);
-  }),
-      get = _utils.get,
-      upgrade = _utils.upgrade,
-      whenDefined = _utils.whenDefined,
-      setupList = _utils.$,
-      asCustomElement$1 = _utils._;
+  var attributeChanged = function attributeChanged(records, mo) {
+    for (var i = 0, length = records.length; i < length; i++) {
+      var _records$i = records[i],
+          target = _records$i.target,
+          attributeName = _records$i.attributeName,
+          oldValue = _records$i.oldValue;
+      var newValue = target.getAttribute(attributeName);
+      attributes.get(mo).call(target, attributeName, oldValue, newValue);
+    }
+  };
 
+  var noop = function noop() {};
+
+  var _QSAO = QSAO({
+    query: query,
+    handle: function handle(element, connected, i) {
+      var _config$i = config[i],
+          m = _config$i.m,
+          o = _config$i.o;
+
+      if (!m.has(element)) {
+        m.set(element, o);
+        var observedAttributes = o.observedAttributes,
+            attributeChangedCallback = o.attributeChangedCallback;
+
+        if (observedAttributes) {
+          var mo = new MutationObserver(attributeChanged);
+          mo.observe(element, {
+            attributes: true,
+            attributeOldValue: true,
+            attributeFilter: observedAttributes.map(function (attributeName) {
+              if (element.hasAttribute(attributeName)) attributeChangedCallback.call(element, attributeName, null, element.getAttribute(attributeName));
+              return attributeName;
+            })
+          });
+          attributes.set(mo, attributeChangedCallback);
+        }
+      }
+
+      (o[(connected ? '' : 'dis') + 'connectedCallback'] || noop).call(element);
+    }
+  }),
+      flush = _QSAO.flush,
+      parse = _QSAO.parse;
+
+  var get = function get(selector) {
+    var i = query.indexOf(selector);
+    return i < 0 ? void 0 : config[i].o;
+  };
   var define = function define(selector, options) {
+    flush();
     if (get(selector)) throw new Error('duplicated: ' + selector);
     query.push(selector);
     config.push({
       o: options,
       m: new WeakMap()
     });
-    setupList(document.querySelectorAll(selector), new Set());
+    parse(document.querySelectorAll(selector));
     whenDefined(selector);
 
     defined[selector]._();
+  };
+  var upgrade = function upgrade(element) {
+    if (query.length) {
+      flush();
+      parse([element]);
+    }
+  };
+  var whenDefined = function whenDefined(selector) {
+    if (!(selector in defined)) {
+      var _,
+          $ = new Lie(function ($) {
+        _ = $;
+      });
+
+      defined[selector] = {
+        _: _,
+        $: $
+      };
+    }
+
+    return defined[selector].$;
   };
 
   exports.define = define;

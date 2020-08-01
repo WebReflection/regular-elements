@@ -3,43 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://unpkg.com/regular-elements"></script>
-  <script>
-  // import {define} from '../esm/index.js'; const regularElements = {define};
-  addEventListener('load', function () {
-    //*
-    regularElements.define('tr', {
-      connectedCallback: function () {
-        this.classList.add('live');
-      },
-      disconnectedCallback: function () {
-        this.classList.remove('live');
+  <script type="module">
+    import(
+      /^(?:localhost|[::1]|127(?:.d+){3})$/.test(location.hostname) ?
+      '../esm/index.js' :
+      'https://unpkg.com/regular-elements?module'
+    ).then(regularElements => {
+      regularElements.define('tr', {
+        connectedCallback: function () {
+          this.classList.add('live');
+        },
+        disconnectedCallback: function () {
+          this.classList.remove('live');
+        }
+      });
+      regularElements.define('td', {
+        connectedCallback: function () {
+          this.classList.add('live');
+        },
+        observedAttributes: ['class'],
+        attributeChangedCallback: function () {
+          var dataset = this.dataset;
+          dataset.changes = parseInt(dataset.changes || 0) + 1;
+        }
+      });
+      //*/
+      var table = document.querySelector('table');
+      for (var i = 0; i < 1000; i++) {
+        var tr = table.appendChild(document.createElement('tr'));
+        for (var j = 0; j < 5; j++)
+          tr.appendChild(document.createElement('td')).textContent = 'td ' + (j + 1);
       }
-    });
-    regularElements.define('td', {
-      connectedCallback: function () {
-        this.classList.add('live');
-      },
-      observedAttributes: ['class'],
-      attributeChangedCallback: function () {
-        var dataset = this.dataset;
-        dataset.changes = parseInt(dataset.changes || 0) + 1;
-      }
-    });
-    //*/
-    var table = document.querySelector('table');
-    for (var i = 0; i < 1000; i++) {
-      var tr = table.appendChild(document.createElement('tr'));
-      for (var j = 0; j < 5; j++)
-        tr.appendChild(document.createElement('td')).textContent = 'td ' + (j + 1);
-    }
-    setTimeout(function () {
-      document.body.removeChild(table);
       setTimeout(function () {
-        document.body.appendChild(table);
+        document.body.removeChild(table);
+        setTimeout(function () {
+          document.body.appendChild(table);
+        }, 100);
       }, 100);
-    }, 100);
-  }, {once: true});
+    });
   </script>
 </head>
 <body>
