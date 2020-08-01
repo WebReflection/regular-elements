@@ -10,7 +10,7 @@
   * callbacks are callbacks, not even driven anymore
   * if present, `observedAttributes` must contain at least one attribute name
   * browsers older than IE 11 might not work as expected
-  * the minified gzipped size is now *~1K*
+  * the minified gzipped size is now *~0.9K*
 
 - - -
 
