@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>regular-elements</title>
+  <script type="module">
+  import(
+    /^(?:localhost|[::1]|127(?:.d+){3})$/.test(location.hostname) ?
+    '../esm/index.js' :
+    'https://unpkg.com/regular-elements?module'
+  )
+  .then(({define, get, whenDefined}) => {
+    whenDefined('button').then(() => {
+      console.log('button', get('button'));
+    });
+    whenDefined('body > .test').then(() => {
+      console.log('body > .test', get('body > .test'));
+    });
+    define('button', {
+      connectedCallback() {
+        console.log('button', 'connected');
+      }
+    });
+    define('body > .test', {
+      connectedCallback() {
+        console.log('body > .test', 'connected');
+      },
+      disconnectedCallback() {
+        console.log('body > .test', 'disconnected');
+      }
+    });
+    setTimeout(() => {
+      document.querySelector('button').remove();
+    }, 1000);
+  });
+  </script>
+</head>
+<body>
+  <button class="test">OK</button>
+</body>
+</html>

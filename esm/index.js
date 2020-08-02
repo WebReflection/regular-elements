@@ -3,7 +3,7 @@ import QSAO from 'qsa-observer';
 
 const attributes = new WeakMap;
 const query = [];
-const config = [];
+const config = {};
 const defined = {};
 
 const attributeChanged = (records, mo) => {
@@ -14,12 +14,10 @@ const attributeChanged = (records, mo) => {
   }
 };
 
-const noop = () => {};
-
 const {flush, parse} = QSAO({
   query,
-  handle(element, connected, i) {
-    const {m, o} = config[i];
+  handle(element, connected, selector) {
+    const {m, o} = config[selector];
     if (!m.has(element)) {
       m.set(element, o);
       const {
@@ -45,21 +43,20 @@ const {flush, parse} = QSAO({
         attributes.set(mo, attributeChangedCallback);
       }
     }
-    (o[(connected ? '' : 'dis') + 'connectedCallback'] || noop).call(element);
+    const method = o[(connected ? '' : 'dis') + 'connectedCallback'];
+    if (method)
+      method.call(element);
   }
 });
 
-export const get = selector => {
-  const i = query.indexOf(selector);
-  return i < 0 ? void 0 : config[i].o;
-};
+export const get = selector => (config[selector] || attributes).o;
 
 export const define = (selector, options) => {
-  flush();
   if (get(selector))
     throw new Error('duplicated: ' + selector);
+  flush();
   query.push(selector);
-  config.push({o: options, m: new WeakMap});
+  config[selector] = {o: options, m: new WeakMap};
   parse(document.querySelectorAll(selector));
   whenDefined(selector);
   defined[selector]._();

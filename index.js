@@ -23,6 +23,8 @@ self.regularElements = (function (exports) {
 
   var filter = [].filter;
   var QSAO = (function (options) {
+    var live = new WeakMap();
+
     var callback = function callback(records) {
       var query = options.query;
 
@@ -41,16 +43,41 @@ self.regularElements = (function (exports) {
     var loop = function loop(elements, connected, query) {
       var set = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new Set();
 
-      for (var element, i = 0, length = elements.length; i < length; i++) {
-        if (!set.has(element = elements[i])) {
-          set.add(element);
+      var _loop = function _loop(_selectors, _element, i, length) {
+        if (!set.has(_element = elements[i])) {
+          set.add(_element);
 
-          for (var m = matches(element), _i = 0, _length = query.length; _i < _length; _i++) {
-            if (m.call(element, query[_i])) options.handle(element, connected, _i);
+          if (connected) {
+            for (var q, m = matches(_element), _i = 0, _length = query.length; _i < _length; _i++) {
+              if (m.call(_element, q = query[_i])) {
+                if (!live.has(_element)) live.set(_element, new Set());
+                _selectors = live.get(_element);
+
+                if (!_selectors.has(q)) {
+                  _selectors.add(q);
+
+                  options.handle(_element, connected, q);
+                }
+              }
+            }
+          } else if (live.has(_element)) {
+            _selectors = live.get(_element);
+            live["delete"](_element);
+
+            _selectors.forEach(function (q) {
+              options.handle(_element, connected, q);
+            });
           }
 
-          loop(element.querySelectorAll(query), connected, query, set);
+          loop(_element.querySelectorAll(query), connected, query, set);
         }
+
+        selectors = _selectors;
+        element = _element;
+      };
+
+      for (var selectors, element, i = 0, length = elements.length; i < length; i++) {
+        _loop(selectors, element, i);
       }
     };
 
@@ -80,7 +107,7 @@ self.regularElements = (function (exports) {
 
   var attributes = new WeakMap();
   var query = [];
-  var config = [];
+  var config = {};
   var defined = {};
 
   var attributeChanged = function attributeChanged(records, mo) {
@@ -94,14 +121,12 @@ self.regularElements = (function (exports) {
     }
   };
 
-  var noop = function noop() {};
-
   var _QSAO = QSAO({
     query: query,
-    handle: function handle(element, connected, i) {
-      var _config$i = config[i],
-          m = _config$i.m,
-          o = _config$i.o;
+    handle: function handle(element, connected, selector) {
+      var _config$selector = config[selector],
+          m = _config$selector.m,
+          o = _config$selector.o;
 
       if (!m.has(element)) {
         m.set(element, o);
@@ -122,24 +147,24 @@ self.regularElements = (function (exports) {
         }
       }
 
-      (o[(connected ? '' : 'dis') + 'connectedCallback'] || noop).call(element);
+      var method = o[(connected ? '' : 'dis') + 'connectedCallback'];
+      if (method) method.call(element);
     }
   }),
       flush = _QSAO.flush,
       parse = _QSAO.parse;
 
   var get = function get(selector) {
-    var i = query.indexOf(selector);
-    return i < 0 ? void 0 : config[i].o;
+    return (config[selector] || attributes).o;
   };
   var define = function define(selector, options) {
-    flush();
     if (get(selector)) throw new Error('duplicated: ' + selector);
+    flush();
     query.push(selector);
-    config.push({
+    config[selector] = {
       o: options,
       m: new WeakMap()
-    });
+    };
     parse(document.querySelectorAll(selector));
     whenDefined(selector);
 
