@@ -42,7 +42,7 @@
   "unpkg": "min.js",
   "dependencies": {
     "@webreflection/lie": "^0.1.0",
-    "qsa-observer": "^1.0.0"
+    "qsa-observer": "^1.1.2"
   },
   "repository": {
     "type": "git",
