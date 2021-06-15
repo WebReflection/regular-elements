@@ -1,7 +1,5 @@
 # regularElements
 
-[![Build Status](https://travis-ci.com/WebReflection/regular-elements.svg?branch=master)](https://travis-ci.com/WebReflection/regular-elements) ![WebReflection status](https://offline.report/status/webreflection.svg)
-
 - - -
 
 **V1 Breaking Changes**
