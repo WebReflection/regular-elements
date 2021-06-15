@@ -1,6 +1,6 @@
 {
   "name": "regular-elements",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Custom Elements made available for any node, and through CSS selectors",
   "main": "./cjs/index.js",
   "scripts": {
